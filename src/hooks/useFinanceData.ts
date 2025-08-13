@@ -1,137 +1,216 @@
 import { useState, useEffect } from 'react';
-import { Transaction, Category, MonthlyData, defaultCategories } from '@/types/finance';
+import { Transaction, Category, MonthlyData } from '@/types/finance';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useFinanceData = () => {
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('finance-categories');
-    return saved ? JSON.parse(saved) : defaultCategories;
-  });
-
-  const [monthlyData, setMonthlyData] = useState<{ [key: string]: MonthlyData }>(() => {
-    const saved = localStorage.getItem('finance-monthly-data');
-    return saved ? JSON.parse(saved) : {};
-  });
-
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currentDate, setCurrentDate] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1 };
   });
 
+  // Load categories from Supabase
   useEffect(() => {
-    localStorage.setItem('finance-categories', JSON.stringify(categories));
-  }, [categories]);
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('type', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching categories:', error);
+      } else {
+        const mappedCategories: Category[] = (data || []).map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          color: cat.color,
+          type: cat.type as 'income' | 'expense'
+        }));
+        setCategories(mappedCategories);
+      }
+    };
 
+    fetchCategories();
+  }, []);
+
+  // Load transactions for current month from Supabase
   useEffect(() => {
-    localStorage.setItem('finance-monthly-data', JSON.stringify(monthlyData));
-  }, [monthlyData]);
+    const fetchTransactions = async () => {
+      const startDate = new Date(currentDate.year, currentDate.month - 1, 1);
+      const endDate = new Date(currentDate.year, currentDate.month, 0);
+      
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .gte('date', startDate.toISOString().split('T')[0])
+        .lte('date', endDate.toISOString().split('T')[0])
+        .order('date', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching transactions:', error);
+      } else {
+        const mappedTransactions: Transaction[] = (data || []).map(t => ({
+          id: t.id,
+          description: t.description,
+          amount: Number(t.amount),
+          type: t.type as 'income' | 'expense',
+          categoryId: t.category_id,
+          date: t.date
+        }));
+        setTransactions(mappedTransactions);
+      }
+    };
 
-  const getCurrentMonthKey = () => `${currentDate.year}-${currentDate.month}`;
+    fetchTransactions();
+  }, [currentDate]);
 
   const getCurrentMonthData = (): MonthlyData => {
-    const key = getCurrentMonthKey();
-    if (!monthlyData[key]) {
-      return {
-        year: currentDate.year,
-        month: currentDate.month,
-        transactions: [],
-        totalIncome: 0,
-        totalExpense: 0,
-        balance: 0
+    const totalIncome = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    
+    const totalExpense = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    
+    return {
+      year: currentDate.year,
+      month: currentDate.month,
+      transactions,
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense
+    };
+  };
+
+  const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([{
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        category_id: transaction.categoryId,
+        date: transaction.date
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding transaction:', error);
+    } else if (data) {
+      const newTransaction: Transaction = {
+        id: data.id,
+        description: data.description,
+        amount: Number(data.amount),
+        type: data.type as 'income' | 'expense',
+        categoryId: data.category_id,
+        date: data.date
       };
+      setTransactions(prev => [newTransaction, ...prev]);
     }
-    return monthlyData[key];
   };
 
-  const addTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const key = getCurrentMonthKey();
-    const id = Date.now().toString();
-    const newTransaction = { ...transaction, id };
-    
-    const currentData = getCurrentMonthData();
-    const updatedTransactions = [...currentData.transactions, newTransaction];
-    
-    const totalIncome = updatedTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const totalExpense = updatedTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const updatedData: MonthlyData = {
-      ...currentData,
-      transactions: updatedTransactions,
-      totalIncome,
-      totalExpense,
-      balance: totalIncome - totalExpense
-    };
-    
-    setMonthlyData(prev => ({ ...prev, [key]: updatedData }));
+  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+    const updateData: any = {};
+    if (updates.description) updateData.description = updates.description;
+    if (updates.amount) updateData.amount = updates.amount;
+    if (updates.type) updateData.type = updates.type;
+    if (updates.categoryId) updateData.category_id = updates.categoryId;
+    if (updates.date) updateData.date = updates.date;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating transaction:', error);
+    } else if (data) {
+      const updatedTransaction: Transaction = {
+        id: data.id,
+        description: data.description,
+        amount: Number(data.amount),
+        type: data.type as 'income' | 'expense',
+        categoryId: data.category_id,
+        date: data.date
+      };
+      setTransactions(prev => prev.map(t => t.id === id ? updatedTransaction : t));
+    }
   };
 
-  const updateTransaction = (id: string, updates: Partial<Transaction>) => {
-    const key = getCurrentMonthKey();
-    const currentData = getCurrentMonthData();
-    
-    const updatedTransactions = currentData.transactions.map(t =>
-      t.id === id ? { ...t, ...updates } : t
-    );
-    
-    const totalIncome = updatedTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const totalExpense = updatedTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const updatedData: MonthlyData = {
-      ...currentData,
-      transactions: updatedTransactions,
-      totalIncome,
-      totalExpense,
-      balance: totalIncome - totalExpense
-    };
-    
-    setMonthlyData(prev => ({ ...prev, [key]: updatedData }));
+  const deleteTransaction = async (id: string) => {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting transaction:', error);
+    } else {
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    }
   };
 
-  const deleteTransaction = (id: string) => {
-    const key = getCurrentMonthKey();
-    const currentData = getCurrentMonthData();
-    
-    const updatedTransactions = currentData.transactions.filter(t => t.id !== id);
-    
-    const totalIncome = updatedTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const totalExpense = updatedTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const updatedData: MonthlyData = {
-      ...currentData,
-      transactions: updatedTransactions,
-      totalIncome,
-      totalExpense,
-      balance: totalIncome - totalExpense
-    };
-    
-    setMonthlyData(prev => ({ ...prev, [key]: updatedData }));
+  const addCategory = async (category: Omit<Category, 'id'>) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .insert([{
+        name: category.name,
+        color: category.color,
+        type: category.type
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding category:', error);
+    } else if (data) {
+      const newCategory: Category = {
+        id: data.id,
+        name: data.name,
+        color: data.color,
+        type: data.type as 'income' | 'expense'
+      };
+      setCategories(prev => [...prev, newCategory]);
+    }
   };
 
-  const addCategory = (category: Omit<Category, 'id'>) => {
-    const id = Date.now().toString();
-    setCategories(prev => [...prev, { ...category, id }]);
+  const updateCategory = async (id: string, updates: Partial<Category>) => {
+    const { data, error } = await supabase
+      .from('categories')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating category:', error);
+    } else if (data) {
+      const updatedCategory: Category = {
+        id: data.id,
+        name: data.name,
+        color: data.color,
+        type: data.type as 'income' | 'expense'
+      };
+      setCategories(prev => prev.map(cat => cat.id === id ? updatedCategory : cat));
+    }
   };
 
-  const updateCategory = (id: string, updates: Partial<Category>) => {
-    setCategories(prev => prev.map(cat => cat.id === id ? { ...cat, ...updates } : cat));
-  };
+  const deleteCategory = async (id: string) => {
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
 
-  const deleteCategory = (id: string) => {
-    setCategories(prev => prev.filter(cat => cat.id !== id));
+    if (error) {
+      console.error('Error deleting category:', error);
+    } else {
+      setCategories(prev => prev.filter(cat => cat.id !== id));
+    }
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
