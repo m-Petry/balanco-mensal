@@ -1,0 +1,295 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon, Edit2, Trash2 } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Transaction, Category } from "@/types/finance";
+import { useToast } from "@/hooks/use-toast";
+
+interface TransactionsListProps {
+  transactions: Transaction[];
+  categories: Category[];
+  onUpdateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  onDeleteTransaction: (id: string) => void;
+}
+
+const TransactionsList = ({ 
+  transactions, 
+  categories, 
+  onUpdateTransaction, 
+  onDeleteTransaction 
+}: TransactionsListProps) => {
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [categoryId, setCategoryId] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
+  const { toast } = useToast();
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setDescription(transaction.description);
+    setAmount(transaction.amount.toString());
+    setType(transaction.type);
+    setCategoryId(transaction.categoryId);
+    setDate(parseISO(transaction.date));
+  };
+
+  const handleUpdate = () => {
+    if (!editingTransaction || !description.trim() || !amount || !categoryId) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const numAmount = parseFloat(amount.replace(',', '.'));
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast({
+        title: "Erro",
+        description: "Digite um valor válido",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    onUpdateTransaction(editingTransaction.id, {
+      description: description.trim(),
+      amount: numAmount,
+      type,
+      categoryId,
+      date: format(date, 'yyyy-MM-dd')
+    });
+
+    setEditingTransaction(null);
+    toast({
+      title: "Sucesso",
+      description: "Transação atualizada com sucesso!"
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    onDeleteTransaction(id);
+    toast({
+      title: "Sucesso",
+      description: "Transação excluída com sucesso!"
+    });
+  };
+
+  const getCategoryName = (categoryId: string) => {
+    return categories.find(cat => cat.id === categoryId)?.name || 'Categoria não encontrada';
+  };
+
+  const getCategoryColor = (categoryId: string) => {
+    return categories.find(cat => cat.id === categoryId)?.color || '#64748b';
+  };
+
+  const sortedTransactions = [...transactions].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const filteredCategories = categories.filter(cat => cat.type === type);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Transações do Mês</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {sortedTransactions.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">
+            Nenhuma transação encontrada para este mês.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {sortedTransactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <div 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium">{transaction.description}</span>
+                      <Badge 
+                        variant={transaction.type === 'income' ? 'default' : 'secondary'}
+                        className={transaction.type === 'income' ? 'bg-income text-white' : 'bg-expense text-white'}
+                      >
+                        {getCategoryName(transaction.categoryId)}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {format(parseISO(transaction.date), "dd 'de' MMMM", { locale: ptBR })}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <span 
+                    className={`font-semibold ${
+                      transaction.type === 'income' ? 'text-income' : 'text-expense'
+                    }`}
+                  >
+                    {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                  </span>
+                  
+                  <div className="flex gap-1">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleEdit(transaction)}
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Editar Transação</DialogTitle>
+                        </DialogHeader>
+                        
+                        <div className="space-y-6">
+                          <div className="space-y-3">
+                            <Label>Tipo</Label>
+                            <RadioGroup value={type} onValueChange={(value: 'income' | 'expense') => {
+                              setType(value);
+                              setCategoryId('');
+                            }}>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="income" id="edit-income" />
+                                <Label htmlFor="edit-income" className="text-income font-medium">Receita</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="expense" id="edit-expense" />
+                                <Label htmlFor="edit-expense" className="text-expense font-medium">Despesa</Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-description">Descrição</Label>
+                            <Input
+                              id="edit-description"
+                              value={description}
+                              onChange={(e) => setDescription(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-amount">Valor</Label>
+                            <Input
+                              id="edit-amount"
+                              type="text"
+                              value={amount}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9.,]/g, '');
+                                setAmount(value);
+                              }}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Categoria</Label>
+                            <Select value={categoryId} onValueChange={setCategoryId}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {filteredCategories.map((category) => (
+                                  <SelectItem key={category.id} value={category.id}>
+                                    <div className="flex items-center gap-2">
+                                      <div 
+                                        className="w-3 h-3 rounded-full" 
+                                        style={{ backgroundColor: category.color }}
+                                      />
+                                      {category.name}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Data</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !date && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={date}
+                                  onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
+                                  initialFocus
+                                  className="pointer-events-auto"
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => setEditingTransaction(null)}
+                              className="flex-1"
+                            >
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleUpdate} className="flex-1">
+                              Salvar
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(transaction.id)}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TransactionsList;
