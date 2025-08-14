@@ -15,6 +15,7 @@ import {
   LineChart,
   Line,
   ReferenceLine,
+  Tooltip,
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -97,168 +98,276 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
   const chartConfig = {
     receitas: {
       label: "Receitas",
-      color: "hsl(var(--chart-income))",
+      color: "hsl(142, 76%, 36%)", // Verde mais visível
     },
     despesas: {
       label: "Despesas", 
-      color: "hsl(var(--chart-expense))",
+      color: "hsl(0, 84%, 60%)", // Vermelho mais visível
     },
     saldo: {
       label: "Saldo",
-      color: "hsl(var(--chart-1))",
+      color: "hsl(217, 91%, 60%)", // Azul mais visível
     },
     actual: {
       label: "Gastos Reais",
-      color: "hsl(var(--chart-income))",
+      color: "hsl(142, 76%, 36%)", // Verde
     },
     projected: {
       label: "Projeção",
-      color: "hsl(var(--chart-2))",
+      color: "hsl(45, 93%, 47%)", // Amarelo/dourado
     },
     average: {
       label: "Média Diária",
-      color: "hsl(var(--chart-1))",
+      color: "hsl(217, 91%, 60%)", // Azul
     },
   };
 
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="trend" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="trend" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Tendência 6 Meses
-          </TabsTrigger>
-          <TabsTrigger value="projection" className="flex items-center gap-2">
-            <Target className="w-4 h-4" />
-            Projeção Diária
-          </TabsTrigger>
-        </TabsList>
+    <div className="grid gap-6 lg:grid-cols-2">
+      {/* Card 1: Tendência 6 Meses e Receitas vs Despesas */}
+      <Card>
+        <Tabs defaultValue="trend" className="w-full">
+          <CardHeader className="pb-3">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="trend" className="flex items-center gap-2 text-xs">
+                <TrendingUp className="w-3 h-3" />
+                Tendência 6 Meses
+              </TabsTrigger>
+              <TabsTrigger value="income-expense" className="flex items-center gap-2 text-xs">
+                <Calendar className="w-3 h-3" />
+                Receitas vs Despesas
+              </TabsTrigger>
+            </TabsList>
+          </CardHeader>
 
-        <TabsContent value="trend" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Tendência dos Últimos 6 Meses
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[400px]">
+          <TabsContent value="trend" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={sixMonthData}>
+                  <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
                       dataKey="month" 
                       stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
+                      fontSize={10}
+                      tickMargin={5}
                     />
                     <YAxis 
                       stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                      fontSize={10}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      width={35}
                     />
-                    <ChartTooltip 
-                      content={<ChartTooltipContent 
-                        formatter={(value) => formatCurrency(Number(value))}
-                      />} 
+                    <Tooltip 
+                      formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                      labelFormatter={(label) => label}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                        fontSize: '12px'
+                      }}
                     />
                     
                     <Area
                       type="monotone"
                       dataKey="receitas"
-                      stackId="1"
-                      stroke="hsl(var(--chart-income))"
-                      fill="hsl(var(--chart-income))"
-                      fillOpacity={0.8}
+                      stroke="hsl(142, 76%, 36%)"
+                      fill="hsl(142, 76%, 36%)"
+                      fillOpacity={0.3}
+                      strokeWidth={2}
                     />
                     <Area
                       type="monotone"
                       dataKey="despesas"
-                      stackId="2"
-                      stroke="hsl(var(--chart-expense))"
-                      fill="hsl(var(--chart-expense))"
-                      fillOpacity={0.8}
+                      stroke="hsl(0, 84%, 60%)"
+                      fill="hsl(0, 84%, 60%)"
+                      fillOpacity={0.3}
+                      strokeWidth={2}
                     />
                     <Area
                       type="monotone"
                       dataKey="saldo"
-                      stackId="3"
-                      stroke="hsl(var(--chart-1))"
-                      fill="hsl(var(--chart-1))"
+                      stroke="hsl(217, 91%, 60%)"
+                      fill="hsl(217, 91%, 60%)"
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </TabsContent>
+
+          <TabsContent value="income-expense" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="text-center text-sm text-muted-foreground mb-4">
+                Comparativo do mês atual
+              </div>
+              <div className="h-[280px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={[{
+                    name: 'Receitas',
+                    receitas: sixMonthData[5]?.receitas || 0,
+                    despesas: 0
+                  }, {
+                    name: 'Despesas',
+                    receitas: 0,
+                    despesas: sixMonthData[5]?.despesas || 0
+                  }]} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      width={35}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [formatCurrency(value), '']}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <Area
+                      dataKey="receitas"
+                      stroke="hsl(142, 76%, 36%)"
+                      fill="hsl(142, 76%, 36%)"
+                      fillOpacity={0.6}
+                    />
+                    <Area
+                      dataKey="despesas"
+                      stroke="hsl(0, 84%, 60%)"
+                      fill="hsl(0, 84%, 60%)"
                       fillOpacity={0.6}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="projection" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Projeção de Gastos Diários
-              </CardTitle>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>Média diária atual: {formatCurrency(dailyAverage)}</p>
-                <p>Projeção para o mês: {formatCurrency(projectedTotal)}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[400px]">
+            </CardContent>
+          </TabsContent>
+        </Tabs>
+      </Card>
+
+      {/* Card 2: Projeção Diária e Distribuição */}
+      <Card>
+        <Tabs defaultValue="projection" className="w-full">
+          <CardHeader className="pb-3">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="projection" className="flex items-center gap-2 text-xs">
+                <Target className="w-3 h-3" />
+                Projeção Diária
+              </TabsTrigger>
+              <TabsTrigger value="distribution" className="flex items-center gap-2 text-xs">
+                <Calendar className="w-3 h-3" />
+                Distribuição
+              </TabsTrigger>
+            </TabsList>
+          </CardHeader>
+
+          <TabsContent value="projection" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="text-sm text-muted-foreground mb-4 space-y-1">
+                <p>Média diária: {formatCurrency(dailyAverage)}</p>
+                <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
+              </div>
+              <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyData}>
+                  <LineChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis 
                       dataKey="day" 
                       stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
+                      fontSize={10}
                     />
                     <YAxis 
                       stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      tickFormatter={(value) => `R$ ${value.toFixed(0)}`}
+                      fontSize={10}
+                      tickFormatter={(value) => `${value.toFixed(0)}`}
+                      width={35}
                     />
-                    <ChartTooltip 
-                      content={<ChartTooltipContent 
-                        formatter={(value) => formatCurrency(Number(value))}
-                      />} 
+                    <Tooltip 
+                      formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                        fontSize: '12px'
+                      }}
                     />
                     
                     <ReferenceLine 
                       y={dailyAverage} 
-                      stroke="hsl(var(--chart-1))" 
+                      stroke="hsl(217, 91%, 60%)" 
                       strokeDasharray="5 5"
-                      label={{ value: "Média", position: "insideTopRight" }}
+                      strokeWidth={1}
                     />
                     
                     <Line
+                      name="Gastos Reais"
                       type="monotone"
                       dataKey="actual"
-                      stroke="hsl(var(--chart-income))"
+                      stroke="hsl(142, 76%, 36%)"
                       strokeWidth={2}
-                      dot={{ fill: "hsl(var(--chart-income))" }}
+                      dot={{ fill: "hsl(142, 76%, 36%)", r: 3 }}
                       connectNulls={false}
                     />
                     <Line
+                      name="Projeção"
                       type="monotone"
                       dataKey="projected"
-                      stroke="hsl(var(--chart-2))"
+                      stroke="hsl(45, 93%, 47%)"
                       strokeWidth={2}
                       strokeDasharray="5 5"
-                      dot={{ fill: "hsl(var(--chart-2))" }}
+                      dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
                       connectNulls={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </ChartContainer>
+              </div>
             </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+
+          <TabsContent value="distribution" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="text-center text-sm text-muted-foreground mb-4">
+                Análise de Padrões
+              </div>
+              <div className="h-[240px] w-full flex items-center justify-center">
+                <div className="text-center space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 border rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground">Maior Gasto</div>
+                      <div className="text-lg font-bold text-red-500">
+                        {formatCurrency(Math.max(...dailyData.map(d => d.actual || 0)))}
+                      </div>
+                    </div>
+                    <div className="p-3 border rounded-lg">
+                      <div className="text-sm font-medium text-muted-foreground">Menor Gasto</div>
+                      <div className="text-lg font-bold text-green-500">
+                        {formatCurrency(Math.min(...dailyData.filter(d => d.actual && d.actual > 0).map(d => d.actual || 0)))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <div className="text-sm font-medium text-muted-foreground">Dias sem Gastos</div>
+                    <div className="text-lg font-bold text-blue-500">
+                      {dailyData.filter(d => d.actual === 0).length} dias
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </TabsContent>
+        </Tabs>
+      </Card>
     </div>
   );
 };
