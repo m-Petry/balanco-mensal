@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,10 @@ const TransactionsList = ({
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
+  const INITIAL_VISIBLE_COUNT = 6;
+  const STEP_SIZE = 10;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -119,20 +122,31 @@ const TransactionsList = ({
     ? transactions.filter(t => selectedFilters.includes(t.categoryId))
     : transactions;
 
-  const sortedTransactions = [...filteredTransactions].sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => {
+    switch (sortOrder) {
+      case 'newest':
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      case 'oldest':
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      case 'highest':
+        return b.amount - a.amount;
+      case 'lowest':
+        return a.amount - b.amount;
+      default:
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    }
+  });
 
   const visibleTransactions = sortedTransactions.slice(0, visibleCount);
   const hasMore = sortedTransactions.length > visibleCount;
-  const canCollapse = visibleCount > 5;
+  const canCollapse = visibleCount > INITIAL_VISIBLE_COUNT;
 
   const handleShowMore = () => {
-    setVisibleCount(prev => Math.min(prev + 10, sortedTransactions.length));
+    setVisibleCount(prev => Math.min(prev + STEP_SIZE, sortedTransactions.length));
   };
 
   const handleShowLess = () => {
-    setVisibleCount(prev => Math.max(prev - 10, 5));
+    setVisibleCount(prev => Math.max(prev - STEP_SIZE, INITIAL_VISIBLE_COUNT));
   };
 
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -144,7 +158,21 @@ const TransactionsList = ({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle>Transações do Mês</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Transações do Mês</CardTitle>
+          <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}>
+            <SelectTrigger className="w-[180px] h-8">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Mais recentes</SelectItem>
+              <SelectItem value="oldest">Mais antigos</SelectItem>
+              <SelectItem value="highest">Maior valor</SelectItem>
+              <SelectItem value="lowest">Menor valor</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
 
       {/* CardContent vira coluna flex e ocupa todo o espaço disponível; removemos o padding inferior */}
