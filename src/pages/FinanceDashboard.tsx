@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import FinancialSummary from "@/components/finance/FinancialSummary";
 import FinancialCharts from "@/components/finance/FinancialCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
+import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
 
 const FinanceDashboard = () => {
@@ -15,6 +16,8 @@ const FinanceDashboard = () => {
     categories,
     currentMonthData,
     currentDate,
+    previousBalance,
+    showBalancePrompt,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -22,7 +25,9 @@ const FinanceDashboard = () => {
     updateCategory,
     deleteCategory,
     navigateMonth,
-    setSpecificMonth
+    setSpecificMonth,
+    handleAcceptPreviousBalance,
+    handleRejectPreviousBalance
   } = useFinanceData();
 
   // Check if already unlocked in session
@@ -68,10 +73,20 @@ const FinanceDashboard = () => {
           onLock={handleLock}
         />
         
-        <main className="container mx-auto px-4 py-6 space-y-6">
+        <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
           <FinancialSummary monthlyData={currentMonthData} />
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Previous Balance Prompt */}
+          {showBalancePrompt && previousBalance !== null && (
+            <PreviousBalancePrompt
+              previousBalance={previousBalance}
+              currentDate={currentDate}
+              onAcceptBalance={handleAcceptPreviousBalance}
+              onRejectBalance={handleRejectPreviousBalance}
+            />
+          )}
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Column - Transactions List */}
             <TransactionsList
               transactions={currentMonthData.transactions}
@@ -81,7 +96,7 @@ const FinanceDashboard = () => {
             />
             
             {/* Right Column - Charts */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <FinancialCharts 
                 transactions={currentMonthData.transactions}
                 categories={categories}

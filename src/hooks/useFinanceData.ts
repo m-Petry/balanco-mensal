@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 export const useFinanceData = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [previousBalance, setPreviousBalance] = useState<number | null>(null);
+  const [showBalancePrompt, setShowBalancePrompt] = useState(false);
   const [currentDate, setCurrentDate] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1 };
@@ -34,7 +36,7 @@ export const useFinanceData = () => {
     fetchCategories();
   }, []);
 
-  // Load transactions for current month from Supabase
+  // Load transactions for current month and check previous balance
   useEffect(() => {
     const fetchTransactions = async () => {
       const startDate = new Date(currentDate.year, currentDate.month - 1, 1);
@@ -62,7 +64,55 @@ export const useFinanceData = () => {
       }
     };
 
+    const checkPreviousBalance = async () => {
+      // Calculate previous month
+      const prevDate = new Date(currentDate.year, currentDate.month - 2, 1);
+      const prevYear = prevDate.getFullYear();
+      const prevMonth = prevDate.getMonth() + 1;
+      
+      const prevStartDate = new Date(prevYear, prevMonth - 1, 1);
+      const prevEndDate = new Date(prevYear, prevMonth, 0);
+      
+      // Check if current month has any transactions
+      const currentMonthStartDate = new Date(currentDate.year, currentDate.month - 1, 1);
+      const currentMonthEndDate = new Date(currentDate.year, currentDate.month, 0);
+      
+      const { data: currentTransactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .gte('date', currentMonthStartDate.toISOString().split('T')[0])
+        .lte('date', currentMonthEndDate.toISOString().split('T')[0]);
+      
+      // Only show prompt if current month has no transactions
+      if ((currentTransactions || []).length === 0) {
+        // Fetch previous month transactions
+        const { data: prevTransactions, error: prevError } = await supabase
+          .from('transactions')
+          .select('*')
+          .gte('date', prevStartDate.toISOString().split('T')[0])
+          .lte('date', prevEndDate.toISOString().split('T')[0]);
+        
+        if (!prevError && prevTransactions && prevTransactions.length > 0) {
+          const prevIncome = prevTransactions
+            .filter(t => t.type === 'income')
+            .reduce((sum, t) => sum + Number(t.amount), 0);
+          
+          const prevExpense = prevTransactions
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + Number(t.amount), 0);
+          
+          const balance = prevIncome - prevExpense;
+          
+          if (balance !== 0) {
+            setPreviousBalance(balance);
+            setShowBalancePrompt(true);
+          }
+        }
+      }
+    };
+
     fetchTransactions();
+    checkPreviousBalance();
   }, [currentDate]);
 
   const getCurrentMonthData = (): MonthlyData => {
@@ -229,10 +279,23 @@ export const useFinanceData = () => {
     setCurrentDate({ year, month });
   };
 
+  const handleAcceptPreviousBalance = async (transaction: Omit<Transaction, 'id'>) => {
+    await addTransaction(transaction);
+    setShowBalancePrompt(false);
+    setPreviousBalance(null);
+  };
+
+  const handleRejectPreviousBalance = () => {
+    setShowBalancePrompt(false);
+    setPreviousBalance(null);
+  };
+
   return {
     categories,
     currentMonthData: getCurrentMonthData(),
     currentDate,
+    previousBalance,
+    showBalancePrompt,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -240,6 +303,8 @@ export const useFinanceData = () => {
     updateCategory,
     deleteCategory,
     navigateMonth,
-    setSpecificMonth
+    setSpecificMonth,
+    handleAcceptPreviousBalance,
+    handleRejectPreviousBalance
   };
 };

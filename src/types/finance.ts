@@ -29,6 +29,7 @@ export const defaultCategories: Category[] = [
   { id: 'freelance', name: 'Freelance', color: '#10b981', type: 'income' },
   { id: 'investments', name: 'Investimentos', color: '#059669', type: 'income' },
   { id: 'bonus', name: 'Bônus', color: '#047857', type: 'income' },
+  { id: 'transfer-in', name: 'Saldo Anterior (Positivo)', color: '#16a34a', type: 'income' },
   
   // Expense categories
   { id: 'housing', name: 'Moradia', color: '#ef4444', type: 'expense' },
@@ -40,5 +41,6 @@ export const defaultCategories: Category[] = [
   { id: 'shopping', name: 'Compras', color: '#84cc16', type: 'expense' },
   { id: 'utilities', name: 'Contas', color: '#6366f1', type: 'expense' },
   { id: 'insurance', name: 'Seguros', color: '#f59e0b', type: 'expense' },
+  { id: 'transfer-out', name: 'Saldo Anterior (Negativo)', color: '#dc2626', type: 'expense' },
   { id: 'others', name: 'Outros', color: '#64748b', type: 'expense' }
 ];
