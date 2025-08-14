@@ -36,7 +36,7 @@ const TransactionsList = ({
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(6);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
