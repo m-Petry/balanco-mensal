@@ -76,15 +76,6 @@ const FinanceDashboard = () => {
         <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
           <FinancialSummary monthlyData={currentMonthData} />
           
-          {/* Previous Balance Prompt */}
-          {showBalancePrompt && previousBalance !== null && (
-            <PreviousBalancePrompt
-              previousBalance={previousBalance}
-              currentDate={currentDate}
-              onAcceptBalance={handleAcceptPreviousBalance}
-              onRejectBalance={handleRejectPreviousBalance}
-            />
-          )}
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Column - Transactions List */}
@@ -93,6 +84,11 @@ const FinanceDashboard = () => {
               categories={categories}
               onUpdateTransaction={updateTransaction}
               onDeleteTransaction={deleteTransaction}
+              previousBalance={previousBalance}
+              showBalancePrompt={showBalancePrompt}
+              onAcceptBalance={handleAcceptPreviousBalance}
+              onRejectBalance={handleRejectPreviousBalance}
+              currentDate={currentDate}
             />
             
             {/* Right Column - Charts */}

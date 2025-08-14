@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -21,13 +21,23 @@ interface TransactionsListProps {
   categories: Category[];
   onUpdateTransaction: (id: string, updates: Partial<Transaction>) => void;
   onDeleteTransaction: (id: string) => void;
+  previousBalance?: number | null;
+  showBalancePrompt?: boolean;
+  onAcceptBalance?: (transaction: Omit<Transaction, 'id'>) => void;
+  onRejectBalance?: () => void;
+  currentDate: { year: number; month: number };
 }
 
 const TransactionsList = ({ 
   transactions, 
   categories, 
   onUpdateTransaction, 
-  onDeleteTransaction 
+  onDeleteTransaction,
+  previousBalance,
+  showBalancePrompt,
+  onAcceptBalance,
+  onRejectBalance,
+  currentDate
 }: TransactionsListProps) => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [description, setDescription] = useState('');
@@ -233,7 +243,67 @@ const TransactionsList = ({
           </div>
         )}
 
-        {sortedTransactions.length === 0 ? (
+        {/* Previous Balance Transfer Prompt */}
+        {showBalancePrompt && previousBalance !== null && onAcceptBalance && onRejectBalance && (
+          <div className="border rounded-lg p-4 bg-primary/5 border-primary/20 mb-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                {previousBalance >= 0 ? (
+                  <TrendingUp className="w-4 h-4 text-green-600 flex-shrink-0" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-600 flex-shrink-0" />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">Saldo do mês anterior</span>
+                    <Badge variant="outline" className="text-xs">
+                      Transferência
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Saldo {previousBalance >= 0 ? 'positivo' : 'negativo'} de{' '}
+                    <span className={`font-bold ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-bold text-lg ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {previousBalance >= 0 ? '+' : '-'} R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onRejectBalance()}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const transaction: Omit<Transaction, 'id'> = {
+                        description: `Saldo transferido do mês anterior`,
+                        amount: Math.abs(previousBalance),
+                        type: previousBalance >= 0 ? 'income' : 'expense',
+                        categoryId: '', // Will be set by the handler
+                        date: `${currentDate.year}-${String(currentDate.month).padStart(2, '0')}-01`
+                      };
+                      onAcceptBalance(transaction);
+                    }}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Check className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {sortedTransactions.length === 0 && !showBalancePrompt ? (
           <p className="text-muted-foreground text-center py-8">
             Nenhuma transação encontrada para este mês.
           </p>

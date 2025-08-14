@@ -64,7 +64,21 @@ export const useFinanceData = () => {
       }
     };
 
-    const checkPreviousBalance = async () => {
+  const checkPreviousBalance = async () => {
+      const now = new Date();
+      const currentActualMonth = now.getMonth() + 1;
+      const currentActualYear = now.getFullYear();
+      
+      // Only show for future months (months after current actual month)
+      const isCurrentMonthFuture = currentDate.year > currentActualYear || 
+        (currentDate.year === currentActualYear && currentDate.month > currentActualMonth);
+      
+      if (!isCurrentMonthFuture) {
+        setShowBalancePrompt(false);
+        setPreviousBalance(null);
+        return;
+      }
+      
       // Calculate previous month
       const prevDate = new Date(currentDate.year, currentDate.month - 2, 1);
       const prevYear = prevDate.getFullYear();
@@ -108,6 +122,9 @@ export const useFinanceData = () => {
             setShowBalancePrompt(true);
           }
         }
+      } else {
+        setShowBalancePrompt(false);
+        setPreviousBalance(null);
       }
     };
 
@@ -280,7 +297,20 @@ export const useFinanceData = () => {
   };
 
   const handleAcceptPreviousBalance = async (transaction: Omit<Transaction, 'id'>) => {
-    await addTransaction(transaction);
+    // Find a general category or use the first available category
+    const availableCategory = categories.find(cat => cat.type === transaction.type) || categories[0];
+    
+    if (!availableCategory) {
+      console.error('No category available for transaction');
+      return;
+    }
+    
+    const transactionWithValidCategory = {
+      ...transaction,
+      categoryId: availableCategory.id
+    };
+    
+    await addTransaction(transactionWithValidCategory);
     setShowBalancePrompt(false);
     setPreviousBalance(null);
   };
