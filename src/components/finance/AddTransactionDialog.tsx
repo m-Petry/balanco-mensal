@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { getCurrencyInputValue } from "@/utils/currency";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -42,7 +44,7 @@ const AddTransactionDialog = ({ categories, onAddTransaction }: AddTransactionDi
       return;
     }
 
-    const numAmount = parseFloat(amount.replace(',', '.'));
+    const numAmount = getCurrencyInputValue(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       toast({
         title: "Erro", 
@@ -116,15 +118,10 @@ const AddTransactionDialog = ({ categories, onAddTransaction }: AddTransactionDi
 
           <div className="space-y-2">
             <Label htmlFor="amount">Valor *</Label>
-            <Input
+            <CurrencyInput
               id="amount"
-              type="text"
-              placeholder="0,00"
               value={amount}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9.,]/g, '');
-                setAmount(value);
-              }}
+              onChange={setAmount}
             />
           </div>
 

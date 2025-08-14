@@ -39,13 +39,14 @@ export const useFinanceData = () => {
   // Load transactions for current month and check previous balance
   useEffect(() => {
     const fetchTransactions = async () => {
-      const startDate = new Date(currentDate.year, currentDate.month - 1, 1);
+      // For advanced charts, we need to fetch more historical data (6 months)
+      const sixMonthsAgo = new Date(currentDate.year, currentDate.month - 7, 1);
       const endDate = new Date(currentDate.year, currentDate.month, 0);
       
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
-        .gte('date', startDate.toISOString().split('T')[0])
+        .gte('date', sixMonthsAgo.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
         .order('date', { ascending: false });
       
@@ -133,18 +134,22 @@ export const useFinanceData = () => {
   }, [currentDate]);
 
   const getCurrentMonthData = (): MonthlyData => {
-    const totalIncome = transactions
+    // Filter transactions for current month only
+    const monthKey = `${currentDate.year}-${String(currentDate.month).padStart(2, '0')}`;
+    const currentMonthTransactions = transactions.filter(t => t.date.startsWith(monthKey));
+    
+    const totalIncome = currentMonthTransactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + Number(t.amount), 0);
     
-    const totalExpense = transactions
+    const totalExpense = currentMonthTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + Number(t.amount), 0);
     
     return {
       year: currentDate.year,
       month: currentDate.month,
-      transactions,
+      transactions: currentMonthTransactions,
       totalIncome,
       totalExpense,
       balance: totalIncome - totalExpense
@@ -323,6 +328,7 @@ export const useFinanceData = () => {
   return {
     categories,
     currentMonthData: getCurrentMonthData(),
+    allTransactions: transactions, // Return all transactions for advanced charts
     currentDate,
     previousBalance,
     showBalancePrompt,

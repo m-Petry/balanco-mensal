@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Transaction, Category } from "@/types/finance";
+import { formatCurrency } from "@/utils/currency";
 
 interface FinancialChartsProps {
   transactions: Transaction[];
@@ -40,10 +41,6 @@ const FinancialCharts = ({ transactions, categories, totalIncome, totalExpense }
     })
     .filter(item => item.value > 0)
     .sort((a, b) => b.value - a.value);
-
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  };
 
   const formatPercentage = (value: number, total: number) => {
     if (total === 0) return '0%';

@@ -5,6 +5,7 @@ import PasswordLock from "@/components/auth/PasswordLock";
 import Header from "@/components/layout/Header";
 import FinancialSummary from "@/components/finance/FinancialSummary";
 import FinancialCharts from "@/components/finance/FinancialCharts";
+import AdvancedCharts from "@/components/finance/AdvancedCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
 import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
@@ -15,6 +16,7 @@ const FinanceDashboard = () => {
   const {
     categories,
     currentMonthData,
+    allTransactions,
     currentDate,
     previousBalance,
     showBalancePrompt,
@@ -98,6 +100,12 @@ const FinanceDashboard = () => {
                 categories={categories}
                 totalIncome={currentMonthData.totalIncome}
                 totalExpense={currentMonthData.totalExpense}
+              />
+              
+              <AdvancedCharts
+                transactions={allTransactions}
+                categories={categories}
+                currentDate={currentDate}
               />
             </div>
           </div>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, DollarSign, Eye, EyeOff } from "lucide-react";
 import { MonthlyData } from "@/types/finance";
+import { formatCurrency } from "@/utils/currency";
 
 interface FinancialSummaryProps {
   monthlyData: MonthlyData;
@@ -30,9 +31,6 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
     setValuesVisible(!valuesVisible);
   };
 
-  const formatCurrency = (value: number) => {
-    return `R$ ${value.toFixed(2).replace('.', ',')}`;
-  };
 
   return (
     <div className="space-y-4">
