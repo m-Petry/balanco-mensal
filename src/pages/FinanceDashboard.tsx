@@ -4,8 +4,7 @@ import { ThemeProvider } from "next-themes";
 import PasswordLock from "@/components/auth/PasswordLock";
 import Header from "@/components/layout/Header";
 import FinancialSummary from "@/components/finance/FinancialSummary";
-import FinancialCharts from "@/components/finance/FinancialCharts";
-import AdvancedCharts from "@/components/finance/AdvancedCharts";
+import UnifiedCharts from "@/components/finance/UnifiedCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
 import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
@@ -93,21 +92,15 @@ const FinanceDashboard = () => {
               currentDate={currentDate}
             />
             
-            {/* Right Column - Charts */}
-            <div className="space-y-4 sm:space-y-6">
-              <FinancialCharts 
-                transactions={currentMonthData.transactions}
-                categories={categories}
-                totalIncome={currentMonthData.totalIncome}
-                totalExpense={currentMonthData.totalExpense}
-              />
-              
-              <AdvancedCharts
-                transactions={allTransactions}
-                categories={categories}
-                currentDate={currentDate}
-              />
-            </div>
+            {/* Right Column - Unified Charts */}
+            <UnifiedCharts
+              transactions={currentMonthData.transactions}
+              categories={categories}
+              totalIncome={currentMonthData.totalIncome}
+              totalExpense={currentMonthData.totalExpense}
+              allTransactions={allTransactions}
+              currentDate={currentDate}
+            />
           </div>
         </main>
       </div>
