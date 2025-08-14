@@ -57,7 +57,7 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
             <TrendingUp className="h-4 w-4 text-income" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold text-income transition-all duration-300 ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+            <div className={`text-2xl font-bold text-income transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
               {formatCurrency(totalIncome)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -73,7 +73,7 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
             <TrendingDown className="h-4 w-4 text-expense" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold text-expense transition-all duration-300 ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+            <div className={`text-2xl font-bold text-expense transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
               {formatCurrency(totalExpense)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -89,7 +89,7 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
             <DollarSign className={`h-4 w-4 ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'}`} />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'} transition-all duration-300 ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+            <div className={`text-2xl font-bold ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'} transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
               {formatCurrency(balance)}
             </div>
             <p className="text-xs text-muted-foreground">
