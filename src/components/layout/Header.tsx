@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ interface HeaderProps {
   onAddCategory: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory: (id: string) => void;
+  onLock?: () => void;
 }
 
 const Header = ({ 
@@ -30,7 +32,8 @@ const Header = ({
   onAddTransaction,
   onAddCategory,
   onUpdateCategory,
-  onDeleteCategory
+  onDeleteCategory,
+  onLock
 }: HeaderProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   
@@ -42,6 +45,12 @@ const Header = ({
     if (date) {
       onSetMonth(date.getFullYear(), date.getMonth() + 1);
       setCalendarOpen(false);
+    }
+  };
+
+  const handleLock = () => {
+    if (onLock) {
+      onLock();
     }
   };
 
@@ -115,6 +124,15 @@ const Header = ({
               onUpdateCategory={onUpdateCategory}
               onDeleteCategory={onDeleteCategory}
             />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleLock}
+              className="h-9 w-9"
+              title="Bloquear aplicação"
+            >
+              <Lock className="w-4 h-4" />
+            </Button>
             <ThemeToggle />
           </div>
         </div>

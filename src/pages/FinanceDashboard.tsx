@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import PasswordLock from "@/components/auth/PasswordLock";
@@ -37,6 +38,11 @@ const FinanceDashboard = () => {
     sessionStorage.setItem('finance-unlocked', 'true');
   };
 
+  const handleLock = () => {
+    setIsUnlocked(false);
+    sessionStorage.removeItem('finance-unlocked');
+  };
+
   if (!isUnlocked) {
     return (
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
@@ -59,6 +65,7 @@ const FinanceDashboard = () => {
           onAddCategory={addCategory}
           onUpdateCategory={updateCategory}
           onDeleteCategory={deleteCategory}
+          onLock={handleLock}
         />
         
         <main className="container mx-auto px-4 py-6 space-y-6">
