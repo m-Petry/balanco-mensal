@@ -144,7 +144,7 @@ const UnifiedCharts = ({
   const { dailyData, dailyAverage, projectedTotal } = generateDailyProjection();
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Card 1: Receitas vs Despesas e Distribuição de Despesas */}
       <Card>
         <Tabs defaultValue="income-expense" className="w-full">
