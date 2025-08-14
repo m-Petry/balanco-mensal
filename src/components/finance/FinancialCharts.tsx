@@ -73,6 +73,7 @@ const FinancialCharts = ({ transactions, categories, totalIncome, totalExpense }
               />
               <Tooltip 
                 formatter={(value: number) => [formatCurrency(value), '']}
+                labelFormatter={(label) => label}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--card))', 
@@ -116,7 +117,8 @@ const FinancialCharts = ({ transactions, categories, totalIncome, totalExpense }
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => [formatCurrency(value), 'Valor']}
+                    formatter={(value: number) => [formatCurrency(value), '']}
+                    labelFormatter={(label) => label}
                     labelStyle={{ color: 'hsl(var(--foreground))' }}
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--card))', 

@@ -85,31 +85,31 @@
   }
 
   .dark {
-    /* Dark theme - Twitter-like dark blue */
-    --background: 212 38% 8%;
-    --foreground: 210 40% 95%;
+    /* Dark theme - Twitter-like blue-grey */
+    --background: 213 24% 10%;
+    --foreground: 210 30% 98%;
 
-    --card: 212 35% 10%;
-    --card-foreground: 210 40% 95%;
+    --card: 213 22% 12%;
+    --card-foreground: 210 30% 98%;
 
-    --popover: 212 35% 10%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 213 22% 12%;
+    --popover-foreground: 210 30% 98%;
 
     /* Primary - Bright teal for dark mode */
     --primary: 174 60% 60%;
-    --primary-foreground: 212 38% 8%;
+    --primary-foreground: 213 24% 10%;
 
-    /* Secondary - Darker blue-gray */
-    --secondary: 212 25% 15%;
-    --secondary-foreground: 210 30% 85%;
+    /* Secondary - Blue-gray */
+    --secondary: 213 18% 18%;
+    --secondary-foreground: 210 25% 90%;
 
     /* Muted tones for dark */
-    --muted: 212 20% 12%;
-    --muted-foreground: 210 15% 75%;
+    --muted: 213 16% 16%;
+    --muted-foreground: 210 20% 80%;
 
     /* Accent - Softer gold for dark mode */
     --accent: 45 75% 65%;
-    --accent-foreground: 212 38% 8%;
+    --accent-foreground: 213 24% 10%;
 
     /* Status colors - adjusted for dark */
     --success: 142 76% 45%;
@@ -122,8 +122,8 @@
     --warning-foreground: 0 0% 100%;
 
     /* Borders and inputs for dark */
-    --border: 212 25% 18%;
-    --input: 212 25% 15%;
+    --border: 213 18% 22%;
+    --input: 213 18% 18%;
     --ring: 174 60% 60%;
 
     /* Chart colors for dark mode */
@@ -140,14 +140,14 @@
     --expense: 0 84% 65%;
     --balance-positive: 142 76% 45%;
     --balance-negative: 0 84% 65%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 213 22% 12%;
+    --sidebar-foreground: 210 30% 98%;
+    --sidebar-primary: 174 60% 60%;
+    --sidebar-primary-foreground: 213 24% 10%;
+    --sidebar-accent: 213 18% 18%;
+    --sidebar-accent-foreground: 210 30% 98%;
+    --sidebar-border: 213 18% 22%;
+    --sidebar-ring: 174 60% 60%;
   }
 }
 
