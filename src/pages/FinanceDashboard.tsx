@@ -64,19 +64,25 @@ const FinanceDashboard = () => {
         <main className="container mx-auto px-4 py-6 space-y-6">
           <FinancialSummary monthlyData={currentMonthData} />
           
-          <FinancialCharts 
-            transactions={currentMonthData.transactions}
-            categories={categories}
-            totalIncome={currentMonthData.totalIncome}
-            totalExpense={currentMonthData.totalExpense}
-          />
-          
-          <TransactionsList
-            transactions={currentMonthData.transactions}
-            categories={categories}
-            onUpdateTransaction={updateTransaction}
-            onDeleteTransaction={deleteTransaction}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Transactions List */}
+            <TransactionsList
+              transactions={currentMonthData.transactions}
+              categories={categories}
+              onUpdateTransaction={updateTransaction}
+              onDeleteTransaction={deleteTransaction}
+            />
+            
+            {/* Right Column - Charts */}
+            <div className="space-y-6">
+              <FinancialCharts 
+                transactions={currentMonthData.transactions}
+                categories={categories}
+                totalIncome={currentMonthData.totalIncome}
+                totalExpense={currentMonthData.totalExpense}
+              />
+            </div>
+          </div>
         </main>
       </div>
     </ThemeProvider>
