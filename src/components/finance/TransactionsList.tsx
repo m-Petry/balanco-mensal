@@ -142,11 +142,13 @@ const TransactionsList = ({
     .filter(Boolean) as Category[];
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle>Transações do Mês</CardTitle>
       </CardHeader>
-      <CardContent>
+
+      {/* CardContent vira coluna flex e ocupa todo o espaço disponível; removemos o padding inferior */}
+      <CardContent className="flex flex-col flex-1 pb-0">
         {/* Filter Tags */}
         {uniqueCategories.length > 0 && (
           <div className="mb-6">
@@ -202,190 +204,194 @@ const TransactionsList = ({
             )}
           </div>
         )}
+
         {sortedTransactions.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
             Nenhuma transação encontrada para este mês.
           </p>
         ) : (
-          <div className="space-y-3">
-            {visibleTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{transaction.description}</span>
-                      <Badge 
-                        variant={transaction.type === 'income' ? 'default' : 'secondary'}
-                        className={cn(
-                          "cursor-pointer transition-colors",
-                          transaction.type === 'income' ? 'bg-income text-white' : 'bg-expense text-white'
-                        )}
-                        onClick={() => handleCategoryFilter(transaction.categoryId)}
-                      >
-                        {getCategoryName(transaction.categoryId)}
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {format(parseISO(transaction.date), "dd 'de' MMMM", { locale: ptBR })}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <span 
-                    className={`font-semibold ${
-                      transaction.type === 'income' ? 'text-income' : 'text-expense'
-                    }`}
-                  >
-                    {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
-                  </span>
-                  
-                  <div className="flex gap-1">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleEdit(transaction)}
+          <>
+            {/* Lista ocupa o espaço e empurra os controles para baixo */}
+            <div className="space-y-3 flex-1">
+              {visibleTransactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <div 
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{transaction.description}</span>
+                        <Badge 
+                          variant={transaction.type === 'income' ? 'default' : 'secondary'}
+                          className={cn(
+                            "cursor-pointer transition-colors",
+                            transaction.type === 'income' ? 'bg-income text-white' : 'bg-expense text-white'
+                          )}
+                          onClick={() => handleCategoryFilter(transaction.categoryId)}
                         >
-                          <Edit2 className="w-3 h-3" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Editar Transação</DialogTitle>
-                        </DialogHeader>
-                        
-                        <div className="space-y-6">
-                          <div className="space-y-3">
-                            <Label>Tipo</Label>
-                            <RadioGroup value={type} onValueChange={(value: 'income' | 'expense') => {
-                              setType(value);
-                              setCategoryId('');
-                            }}>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="income" id="edit-income" />
-                                <Label htmlFor="edit-income" className="text-income font-medium">Receita</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="expense" id="edit-expense" />
-                                <Label htmlFor="edit-expense" className="text-expense font-medium">Despesa</Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="edit-description">Descrição</Label>
-                            <Input
-                              id="edit-description"
-                              value={description}
-                              onChange={(e) => setDescription(e.target.value)}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="edit-amount">Valor</Label>
-                            <Input
-                              id="edit-amount"
-                              type="text"
-                              value={amount}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/[^0-9.,]/g, '');
-                                setAmount(value);
-                              }}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Categoria</Label>
-                            <Select value={categoryId} onValueChange={setCategoryId}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {filteredCategories.map((category) => (
-                                  <SelectItem key={category.id} value={category.id}>
-                                    <div className="flex items-center gap-2">
-                                      <div 
-                                        className="w-3 h-3 rounded-full" 
-                                        style={{ backgroundColor: category.color }}
-                                      />
-                                      {category.name}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Data</Label>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !date && "text-muted-foreground"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={date}
-                                  onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
-                                  initialFocus
-                                  className="pointer-events-auto"
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-
-                          <div className="flex gap-3">
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              onClick={() => setEditingTransaction(null)}
-                              className="flex-1"
-                            >
-                              Cancelar
-                            </Button>
-                            <Button onClick={handleUpdate} className="flex-1">
-                              Salvar
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => handleDelete(transaction.id)}
+                          {getCategoryName(transaction.categoryId)}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {format(parseISO(transaction.date), "dd 'de' MMMM", { locale: ptBR })}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <span 
+                      className={`font-semibold ${
+                        transaction.type === 'income' ? 'text-income' : 'text-expense'
+                      }`}
                     >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                    </span>
+                    
+                    <div className="flex gap-1">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleEdit(transaction)}
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Editar Transação</DialogTitle>
+                          </DialogHeader>
+                          
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <Label>Tipo</Label>
+                              <RadioGroup value={type} onValueChange={(value: 'income' | 'expense') => {
+                                setType(value);
+                                setCategoryId('');
+                              }}>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="income" id="edit-income" />
+                                  <Label htmlFor="edit-income" className="text-income font-medium">Receita</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="expense" id="edit-expense" />
+                                  <Label htmlFor="edit-expense" className="text-expense font-medium">Despesa</Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-description">Descrição</Label>
+                              <Input
+                                id="edit-description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-amount">Valor</Label>
+                              <Input
+                                id="edit-amount"
+                                type="text"
+                                value={amount}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9.,]/g, '');
+                                  setAmount(value);
+                                }}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Categoria</Label>
+                              <Select value={categoryId} onValueChange={setCategoryId}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {filteredCategories.map((category) => (
+                                    <SelectItem key={category.id} value={category.id}>
+                                      <div className="flex items-center gap-2">
+                                        <div 
+                                          className="w-3 h-3 rounded-full" 
+                                          style={{ backgroundColor: category.color }}
+                                        />
+                                        {category.name}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Data</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !date && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            <div className="flex gap-3">
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setEditingTransaction(null)}
+                                className="flex-1"
+                              >
+                                Cancelar
+                              </Button>
+                              <Button onClick={handleUpdate} className="flex-1">
+                                Salvar
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(transaction.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            
-            {/* Expansion Controls */}
+              ))}
+            </div>
+
+            {/* Controles de expansão ancorados no rodapé do CardContent */}
             {(hasMore || canCollapse) && (
-              <div className="flex justify-center gap-2 pt-4 border-t">
+              <div className="mt-auto flex justify-center gap-2 pt-3 border-t">
                 {canCollapse && (
                   <Button
                     variant="outline"
@@ -410,7 +416,7 @@ const TransactionsList = ({
                 )}
               </div>
             )}
-          </div>
+          </>
         )}
       </CardContent>
     </Card>
