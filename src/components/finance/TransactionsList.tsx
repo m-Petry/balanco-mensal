@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,7 @@ const TransactionsList = ({
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(5);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -122,6 +123,18 @@ const TransactionsList = ({
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  const visibleTransactions = sortedTransactions.slice(0, visibleCount);
+  const hasMore = sortedTransactions.length > visibleCount;
+  const canCollapse = visibleCount > 5;
+
+  const handleShowMore = () => {
+    setVisibleCount(prev => Math.min(prev + 10, sortedTransactions.length));
+  };
+
+  const handleShowLess = () => {
+    setVisibleCount(prev => Math.max(prev - 10, 5));
+  };
+
   const filteredCategories = categories.filter(cat => cat.type === type);
 
   const uniqueCategories = [...new Set(transactions.map(t => t.categoryId))]
@@ -195,7 +208,7 @@ const TransactionsList = ({
           </p>
         ) : (
           <div className="space-y-3">
-            {sortedTransactions.map((transaction) => (
+            {visibleTransactions.map((transaction) => (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -369,6 +382,34 @@ const TransactionsList = ({
                 </div>
               </div>
             ))}
+            
+            {/* Expansion Controls */}
+            {(hasMore || canCollapse) && (
+              <div className="flex justify-center gap-2 pt-4 border-t">
+                {canCollapse && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShowLess}
+                    className="flex items-center gap-1"
+                  >
+                    <Minus className="w-4 h-4" />
+                    Mostrar menos
+                  </Button>
+                )}
+                {hasMore && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShowMore}
+                    className="flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Mostrar mais
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </CardContent>
