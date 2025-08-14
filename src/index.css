@@ -105,7 +105,7 @@
 
     /* Muted tones for dark */
     --muted: 212 20% 12%;
-    --muted-foreground: 210 15% 65%;
+    --muted-foreground: 210 15% 75%;
 
     /* Accent - Softer gold for dark mode */
     --accent: 45 75% 65%;

@@ -100,13 +100,13 @@ const FinancialCharts = ({ transactions, categories, totalIncome, totalExpense }
             <div className="space-y-4">
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
-                  <Pie
+                   <Pie
                     data={expensesByCategory}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${formatPercentage(value, totalExpense)}`}
+                    label={false}
                     labelLine={false}
                     fontSize={10}
                     fill="currentColor"

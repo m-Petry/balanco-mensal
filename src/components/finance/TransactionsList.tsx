@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2 } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ const TransactionsList = ({
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState<Date>(new Date());
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -97,11 +98,35 @@ const TransactionsList = ({
     return categories.find(cat => cat.id === categoryId)?.color || '#64748b';
   };
 
-  const sortedTransactions = [...transactions].sort((a, b) => 
+  const handleCategoryFilter = (categoryId: string) => {
+    setSelectedFilters(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const clearFilter = (categoryId: string) => {
+    setSelectedFilters(prev => prev.filter(id => id !== categoryId));
+  };
+
+  const clearAllFilters = () => {
+    setSelectedFilters([]);
+  };
+
+  const filteredTransactions = selectedFilters.length > 0 
+    ? transactions.filter(t => selectedFilters.includes(t.categoryId))
+    : transactions;
+
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   const filteredCategories = categories.filter(cat => cat.type === type);
+
+  const uniqueCategories = [...new Set(transactions.map(t => t.categoryId))]
+    .map(categoryId => categories.find(cat => cat.id === categoryId))
+    .filter(Boolean) as Category[];
 
   return (
     <Card>
@@ -109,6 +134,61 @@ const TransactionsList = ({
         <CardTitle>Transações do Mês</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Filter Tags */}
+        {uniqueCategories.length > 0 && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2 mb-3">
+              {uniqueCategories.map((category) => (
+                <Badge
+                  key={category.id}
+                  variant={selectedFilters.includes(category.id) ? "default" : "outline"}
+                  className={cn(
+                    "cursor-pointer transition-colors",
+                    selectedFilters.includes(category.id) 
+                      ? "bg-primary text-primary-foreground" 
+                      : "hover:bg-muted"
+                  )}
+                  onClick={() => handleCategoryFilter(category.id)}
+                  style={{
+                    backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
+                    borderColor: category.color
+                  }}
+                >
+                  {category.name}
+                </Badge>
+              ))}
+            </div>
+            
+            {/* Selected Filters Display */}
+            {selectedFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+                {selectedFilters.map((filterId) => {
+                  const category = categories.find(cat => cat.id === filterId);
+                  return category ? (
+                    <Badge
+                      key={filterId}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => clearFilter(filterId)}
+                    >
+                      {category.name}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={clearAllFilters}
+                >
+                  Limpar todos
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
         {sortedTransactions.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
             Nenhuma transação encontrada para este mês.
@@ -130,7 +210,11 @@ const TransactionsList = ({
                       <span className="font-medium">{transaction.description}</span>
                       <Badge 
                         variant={transaction.type === 'income' ? 'default' : 'secondary'}
-                        className={transaction.type === 'income' ? 'bg-income text-white' : 'bg-expense text-white'}
+                        className={cn(
+                          "cursor-pointer transition-colors",
+                          transaction.type === 'income' ? 'bg-income text-white' : 'bg-expense text-white'
+                        )}
+                        onClick={() => handleCategoryFilter(transaction.categoryId)}
                       >
                         {getCategoryName(transaction.categoryId)}
                       </Badge>

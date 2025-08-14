@@ -21,7 +21,7 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
       {/* Total Income */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total de Receitas</CardTitle>
+          <CardTitle className="text-sm font-medium">Receitas</CardTitle>
           <TrendingUp className="h-4 w-4 text-income" />
         </CardHeader>
         <CardContent>
@@ -37,7 +37,7 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
       {/* Total Expenses */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total de Despesas</CardTitle>
+          <CardTitle className="text-sm font-medium">Despesas</CardTitle>
           <TrendingDown className="h-4 w-4 text-expense" />
         </CardHeader>
         <CardContent>
