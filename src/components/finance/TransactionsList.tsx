@@ -36,7 +36,7 @@ const TransactionsList = ({
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(7);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -391,7 +391,7 @@ const TransactionsList = ({
 
             {/* Controles de expansão ancorados no rodapé do CardContent */}
             {(hasMore || canCollapse) && (
-              <div className="mt-auto flex justify-center gap-2 pt-3 border-t">
+              <div className="mt-auto flex justify-center gap-2 pt-4 pb-4 border-t">
                 {canCollapse && (
                   <Button
                     variant="outline"
