@@ -9,19 +9,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Transaction, Category } from "@/types/finance";
 import { useToast } from "@/hooks/use-toast";
+import CategoryManagementDialog from "./CategoryManagementDialog";
 
 interface AddTransactionDialogProps {
   categories: Category[];
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  onAddCategory?: (category: Omit<Category, 'id'>) => void;
+  onUpdateCategory?: (id: string, updates: Partial<Category>) => void;
+  onDeleteCategory?: (id: string) => void;
 }
 
-const AddTransactionDialog = ({ categories, onAddTransaction }: AddTransactionDialogProps) => {
+const AddTransactionDialog = ({ categories, onAddTransaction, onAddCategory, onUpdateCategory, onDeleteCategory }: AddTransactionDialogProps) => {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [description, setDescription] = useState('');
@@ -126,7 +130,30 @@ const AddTransactionDialog = ({ categories, onAddTransaction }: AddTransactionDi
           </div>
 
           <div className="space-y-2">
-            <Label>Categoria *</Label>
+            <div className="flex items-center justify-between">
+              <Label>Categoria *</Label>
+              {onAddCategory && onUpdateCategory && onDeleteCategory && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                    >
+                      <Settings className="w-3 h-3" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-lg">
+                    <CategoryManagementDialog
+                      categories={categories}
+                      onAddCategory={onAddCategory}
+                      onUpdateCategory={onUpdateCategory}
+                      onDeleteCategory={onDeleteCategory}
+                    />
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma categoria" />

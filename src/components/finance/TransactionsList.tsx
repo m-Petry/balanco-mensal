@@ -9,12 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, Eye, EyeOff, Settings } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Transaction, Category } from "@/types/finance";
 import { useToast } from "@/hooks/use-toast";
+import CategoryManagementDialog from "./CategoryManagementDialog";
 
 interface TransactionsListProps {
   transactions: Transaction[];
@@ -26,6 +27,9 @@ interface TransactionsListProps {
   onAcceptBalance?: (transaction: Omit<Transaction, 'id'>) => void;
   onRejectBalance?: () => void;
   currentDate: { year: number; month: number };
+  onAddCategory?: (category: Omit<Category, 'id'>) => void;
+  onUpdateCategory?: (id: string, updates: Partial<Category>) => void;
+  onDeleteCategory?: (id: string) => void;
 }
 
 const TransactionsList = ({ 
@@ -37,7 +41,10 @@ const TransactionsList = ({
   showBalancePrompt,
   onAcceptBalance,
   onRejectBalance,
-  currentDate
+  currentDate,
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory
 }: TransactionsListProps) => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [description, setDescription] = useState('');
@@ -50,6 +57,7 @@ const TransactionsList = ({
   const INITIAL_VISIBLE_COUNT = 6;
   const STEP_SIZE = 10;
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [valuesVisible, setValuesVisible] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -170,18 +178,28 @@ const TransactionsList = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Transações do Mês</CardTitle>
-          <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}>
-            <SelectTrigger className="w-[180px] h-8">
-              <ArrowUpDown className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Mais recentes</SelectItem>
-              <SelectItem value="oldest">Mais antigos</SelectItem>
-              <SelectItem value="highest">Maior valor</SelectItem>
-              <SelectItem value="lowest">Menor valor</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setValuesVisible(!valuesVisible)}
+              className="h-8 w-8 p-0"
+            >
+              {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}>
+              <SelectTrigger className="w-[180px] h-8">
+                <ArrowUpDown className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Mais recentes</SelectItem>
+                <SelectItem value="oldest">Mais antigos</SelectItem>
+                <SelectItem value="highest">Maior valor</SelectItem>
+                <SelectItem value="lowest">Menor valor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardHeader>
 
@@ -341,14 +359,14 @@ const TransactionsList = ({
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3">
-                    <span 
-                      className={`font-semibold ${
-                        transaction.type === 'income' ? 'text-income' : 'text-expense'
-                      }`}
-                    >
-                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
-                    </span>
+                   <div className="flex items-center gap-3">
+                     <span 
+                       className={`font-semibold transition-all duration-300 ${
+                         transaction.type === 'income' ? 'text-income' : 'text-expense'
+                       } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                     >
+                       {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                     </span>
                     
                     <div className="flex gap-1">
                       <Dialog>
@@ -407,27 +425,50 @@ const TransactionsList = ({
                               />
                             </div>
 
-                            <div className="space-y-2">
-                              <Label>Categoria</Label>
-                              <Select value={categoryId} onValueChange={setCategoryId}>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {filteredCategories.map((category) => (
-                                    <SelectItem key={category.id} value={category.id}>
-                                      <div className="flex items-center gap-2">
-                                        <div 
-                                          className="w-3 h-3 rounded-full" 
-                                          style={{ backgroundColor: category.color }}
-                                        />
-                                        {category.name}
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                             <div className="space-y-2">
+                               <div className="flex items-center justify-between">
+                                 <Label>Categoria</Label>
+                                 {onAddCategory && onUpdateCategory && onDeleteCategory && (
+                                   <Dialog>
+                                     <DialogTrigger asChild>
+                                       <Button
+                                         variant="outline"
+                                         size="sm"
+                                         className="h-6 w-6 p-0"
+                                       >
+                                         <Settings className="w-3 h-3" />
+                                       </Button>
+                                     </DialogTrigger>
+                                     <DialogContent className="sm:max-w-lg">
+                                       <CategoryManagementDialog
+                                         categories={categories}
+                                         onAddCategory={onAddCategory}
+                                         onUpdateCategory={onUpdateCategory}
+                                         onDeleteCategory={onDeleteCategory}
+                                       />
+                                     </DialogContent>
+                                   </Dialog>
+                                 )}
+                               </div>
+                               <Select value={categoryId} onValueChange={setCategoryId}>
+                                 <SelectTrigger>
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {filteredCategories.map((category) => (
+                                     <SelectItem key={category.id} value={category.id}>
+                                       <div className="flex items-center gap-2">
+                                         <div 
+                                           className="w-3 h-3 rounded-full" 
+                                           style={{ backgroundColor: category.color }}
+                                         />
+                                         {category.name}
+                                       </div>
+                                     </SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             </div>
 
                             <div className="space-y-2">
                               <Label>Data</Label>

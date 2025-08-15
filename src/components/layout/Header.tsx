@@ -131,6 +131,9 @@ const Header = ({
               <AddTransactionDialog 
                 categories={categories}
                 onAddTransaction={onAddTransaction}
+                onAddCategory={onAddCategory}
+                onUpdateCategory={onUpdateCategory}
+                onDeleteCategory={onDeleteCategory}
               />
               <CategoryManagementDialog
                 categories={categories}
@@ -203,6 +206,9 @@ const Header = ({
             <AddTransactionDialog 
               categories={categories}
               onAddTransaction={onAddTransaction}
+              onAddCategory={onAddCategory}
+              onUpdateCategory={onUpdateCategory}
+              onDeleteCategory={onDeleteCategory}
             />
             <CategoryManagementDialog
               categories={categories}

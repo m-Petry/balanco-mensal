@@ -90,6 +90,9 @@ const FinanceDashboard = () => {
               onAcceptBalance={handleAcceptPreviousBalance}
               onRejectBalance={handleRejectPreviousBalance}
               currentDate={currentDate}
+              onAddCategory={addCategory}
+              onUpdateCategory={updateCategory}
+              onDeleteCategory={deleteCategory}
             />
             
             {/* Right Column - Unified Charts */}
