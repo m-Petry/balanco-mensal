@@ -34,7 +34,7 @@ interface UnifiedChartsProps {
   currentDate: Date | { year: number; month: number };
 }
 
-const UnifiedCharts = ({ 
+const UnifiedCharts = ({
   transactions, 
   categories, 
   totalIncome, 
@@ -44,6 +44,8 @@ const UnifiedCharts = ({
 }: UnifiedChartsProps) => {
   // Convert currentDate to Date object if needed
   const dateObj = currentDate instanceof Date ? currentDate : new Date(currentDate.year, currentDate.month - 1);
+
+  const valuesVisible = true;
 
   // Income vs Expense chart data
   const incomeExpenseData = [
@@ -201,6 +203,7 @@ const UnifiedCharts = ({
                       <Tooltip
                         formatter={(value: number) => [formatCurrency(value), '']}
                         labelFormatter={(label) => label}
+                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                         contentStyle={{
                           backgroundColor: 'hsl(var(--card))',
                           border: '1px solid hsl(var(--border))',
@@ -222,9 +225,22 @@ const UnifiedCharts = ({
                         <LabelList
                           dataKey="value"
                           position="top"
-                          formatter={(value: number) => formatCurrency(value)}
-                          fill="hsl(var(--foreground))"
-                          fontSize={12}
+                          content={(props) => {
+                            const { x, y, value, textAnchor } = props;
+                            return (
+                              <text
+                                x={x}
+                                y={y}
+                                dy={-4}
+                                textAnchor={textAnchor}
+                                fill="hsl(var(--foreground))"
+                                fontSize={12}
+                                className={!valuesVisible ? 'blur-sm select-none' : ''}
+                              >
+                                {formatCurrency(Number(value))}
+                              </text>
+                            );
+                          }}
                         />
                       </Bar>
                     </RechartsBarChart>
@@ -283,7 +299,7 @@ const UnifiedCharts = ({
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-xs">
                       <span className="text-muted-foreground">Total</span>
-                      <span className="font-medium">{formatCurrency(totalExpense)}</span>
+                      <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
                     </div>
                   </div>
                   
