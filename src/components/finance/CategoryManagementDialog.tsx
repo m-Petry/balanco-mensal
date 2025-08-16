@@ -1,12 +1,25 @@
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Settings, Plus, Trash2, Edit2 } from "lucide-react";
 import { Category } from "@/types/finance";
 import { useToast } from "@/hooks/use-toast";
@@ -18,32 +31,42 @@ interface CategoryManagementDialogProps {
   onDeleteCategory: (id: string) => void;
 }
 
-const predefinedColors = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981',
-  '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899',
-  '#f59e0b', '#84cc16', '#64748b', '#059669', '#0891b2'
+const initialColors = [
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#10b981",
+  "#06b6d4",
+  "#3b82f6",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#f59e0b",
+  "#84cc16",
+  "#64748b",
+  "#059669",
+  "#0891b2",
 ];
 
-const CategoryManagementDialog = ({ 
-  categories, 
-  onAddCategory, 
-  onUpdateCategory, 
-  onDeleteCategory 
+const CategoryManagementDialog = ({
+  categories,
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory,
 }: CategoryManagementDialogProps) => {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [availableColors, setAvailableColors] = useState(initialColors);
+  const [customColor, setCustomColor] = useState("#000000");
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({
-    name: '',
-    color: predefinedColors[0],
-    type: 'expense' as 'income' | 'expense'
+    name: "",
+    color: initialColors[0],
+    type: "expense" as "income" | "expense",
   });
   const { toast } = useToast();
-  const customColorRef = useRef<HTMLInputElement>(null);
   const editColorRefs = useRef<Record<string, HTMLInputElement | null>>({});
-
-  const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setNewCategory(prev => ({ ...prev, color: e.target.value }));
-  };
 
   const handleAddCategory = () => {
     if (!newCategory.name.trim()) {
@@ -62,9 +85,9 @@ const CategoryManagementDialog = ({
     });
 
     setNewCategory({
-      name: '',
-      color: predefinedColors[0],
-      type: 'expense'
+      name: "",
+      color: availableColors[0],
+      type: "expense",
     });
 
     toast({
@@ -157,30 +180,54 @@ const CategoryManagementDialog = ({
             <div className="space-y-2">
               <Label>Cor</Label>
               <div className="flex flex-wrap gap-2">
-                {predefinedColors.map((color) => (
+                {availableColors.map((color) => (
                   <button
                     key={color}
                     type="button"
                     className={`w-8 h-8 rounded-full border-2 ${
-                      newCategory.color === color ? 'border-foreground' : 'border-muted'
+                      newCategory.color === color ? "border-foreground" : "border-muted"
                     }`}
                     style={{ backgroundColor: color }}
-                    onClick={() => setNewCategory(prev => ({ ...prev, color }))}
+                    onClick={() =>
+                      setNewCategory((prev) => ({ ...prev, color }))
+                    }
                   />
                 ))}
-                <button
-                  type="button"
-                  className="w-8 h-8 rounded-full border-2 border-muted flex items-center justify-center text-muted-foreground"
-                  onClick={() => customColorRef.current?.click()}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <input
-                  type="color"
-                  ref={customColorRef}
-                  className="sr-only"
-                  onChange={handleCustomColorChange}
-                />
+                <Popover open={colorPickerOpen} onOpenChange={setColorPickerOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full border-2 border-muted flex items-center justify-center text-muted-foreground"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-40 space-y-2">
+                    <input
+                      type="color"
+                      value={customColor}
+                      onChange={(e) => setCustomColor(e.target.value)}
+                      className="w-full h-10 cursor-pointer border rounded"
+                    />
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        setAvailableColors((prev) =>
+                          prev.includes(customColor)
+                            ? prev
+                            : [...prev, customColor]
+                        );
+                        setNewCategory((prev) => ({
+                          ...prev,
+                          color: customColor,
+                        }));
+                        setColorPickerOpen(false);
+                      }}
+                    >
+                      Confirmar
+                    </Button>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
@@ -240,10 +287,10 @@ const CategoryManagementDialog = ({
                       <Select
                         value={category.color}
                         onValueChange={(color) => {
-                          if (color === 'custom') {
+                          if (color === "custom") {
                             editColorRefs.current[category.id]?.click();
                           } else {
-                            handleUpdateCategory(category.id, 'color', color);
+                            handleUpdateCategory(category.id, "color", color);
                           }
                         }}
                       >
@@ -251,7 +298,7 @@ const CategoryManagementDialog = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {predefinedColors.map((color) => (
+                          {availableColors.map((color) => (
                             <SelectItem key={color} value={color}>
                               <div className="flex items-center gap-2">
                                 <div
@@ -275,7 +322,13 @@ const CategoryManagementDialog = ({
                         type="color"
                         ref={(el) => (editColorRefs.current[category.id] = el)}
                         className="sr-only"
-                        onChange={(e) => handleUpdateCategory(category.id, 'color', e.target.value)}
+                        onChange={(e) => {
+                          const color = e.target.value;
+                          handleUpdateCategory(category.id, "color", color);
+                          setAvailableColors((prev) =>
+                            prev.includes(color) ? prev : [...prev, color]
+                          );
+                        }}
                       />
                     </div>
                   ))}
@@ -328,10 +381,10 @@ const CategoryManagementDialog = ({
                       <Select
                         value={category.color}
                         onValueChange={(color) => {
-                          if (color === 'custom') {
+                          if (color === "custom") {
                             editColorRefs.current[category.id]?.click();
                           } else {
-                            handleUpdateCategory(category.id, 'color', color);
+                            handleUpdateCategory(category.id, "color", color);
                           }
                         }}
                       >
@@ -339,7 +392,7 @@ const CategoryManagementDialog = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {predefinedColors.map((color) => (
+                          {availableColors.map((color) => (
                             <SelectItem key={color} value={color}>
                               <div className="flex items-center gap-2">
                                 <div
@@ -363,7 +416,13 @@ const CategoryManagementDialog = ({
                         type="color"
                         ref={(el) => (editColorRefs.current[category.id] = el)}
                         className="sr-only"
-                        onChange={(e) => handleUpdateCategory(category.id, 'color', e.target.value)}
+                        onChange={(e) => {
+                          const color = e.target.value;
+                          handleUpdateCategory(category.id, "color", color);
+                          setAvailableColors((prev) =>
+                            prev.includes(color) ? prev : [...prev, color]
+                          );
+                        }}
                       />
                     </div>
                   ))}
