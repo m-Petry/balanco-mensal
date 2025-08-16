@@ -124,13 +124,6 @@ const Header = ({
             
             {/* Action Buttons */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              <AddTransactionDialog 
-                categories={categories}
-                onAddTransaction={onAddTransaction}
-                onAddCategory={onAddCategory}
-                onUpdateCategory={onUpdateCategory}
-                onDeleteCategory={onDeleteCategory}
-              />
               <CategoryManagementDialog
                 categories={categories}
                 onAddCategory={onAddCategory}
