@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,8 @@ interface TransactionsListProps {
   onAddCategory?: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory?: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory?: (id: string) => void;
+  valuesVisible: boolean;
+  setValuesVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 const TransactionsList = ({ 
@@ -44,7 +46,9 @@ const TransactionsList = ({
   currentDate,
   onAddCategory,
   onUpdateCategory,
-  onDeleteCategory
+  onDeleteCategory,
+  valuesVisible,
+  setValuesVisible
 }: TransactionsListProps) => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [description, setDescription] = useState('');
@@ -57,7 +61,6 @@ const TransactionsList = ({
   const INITIAL_VISIBLE_COUNT = 6;
   const [showAll, setShowAll] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
-  const [valuesVisible, setValuesVisible] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {

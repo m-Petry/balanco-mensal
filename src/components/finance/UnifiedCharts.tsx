@@ -18,10 +18,11 @@ import {
   Cell,
   AreaChart,
   Area,
-  LineChart,
   Line,
   ReferenceLine,
   Tooltip,
+  LabelList,
+  ComposedChart,
 } from "recharts";
 
 interface UnifiedChartsProps {
@@ -31,15 +32,17 @@ interface UnifiedChartsProps {
   totalExpense: number;
   allTransactions: Transaction[];
   currentDate: Date | { year: number; month: number };
+  valuesVisible: boolean;
 }
 
-const UnifiedCharts = ({ 
-  transactions, 
-  categories, 
-  totalIncome, 
+const UnifiedCharts = ({
+  transactions,
+  categories,
+  totalIncome,
   totalExpense,
   allTransactions,
-  currentDate
+  currentDate,
+  valuesVisible
 }: UnifiedChartsProps) => {
   // Convert currentDate to Date object if needed
   const dateObj = currentDate instanceof Date ? currentDate : new Date(currentDate.year, currentDate.month - 1);
@@ -169,33 +172,79 @@ const UnifiedCharts = ({
                   <ChartInfoButton chartType="income-expense" />
                 </div>
                 <div className="h-[280px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsBarChart data={incomeExpenseData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                      width={35}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [formatCurrency(value), '']}
-                      labelFormatter={(label) => label}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart
+                      data={incomeExpenseData}
+                      margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                      barCategoryGap={0}
+                    >
+                      <defs>
+                        <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.2} />
+                        </linearGradient>
+                        <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.2} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={10}
+                      />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={10}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                        width={35}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => [formatCurrency(value), '']}
+                        labelFormatter={(label) => label}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px',
+                          fontSize: '12px'
+                        }}
+                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                      />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={120}>
+                        {incomeExpenseData.map((entry) => (
+                          <Cell
+                            key={entry.name}
+                            fill={
+                              entry.name === 'Receitas'
+                                ? 'url(#incomeGradient)'
+                                : 'url(#expenseGradient)'
+                            }
+                          />
+                        ))}
+                        <LabelList
+                          dataKey="value"
+                          position="top"
+                          content={(props) => {
+                            const { x, y, value } = props as any;
+                            return (
+                              <text
+                                x={x}
+                                y={y}
+                                dy={-4}
+                                fill="hsl(var(--foreground))"
+                                fontSize={12}
+                                textAnchor="middle"
+                                className={!valuesVisible ? 'blur-sm select-none' : ''}
+                              >
+                                {formatCurrency(Number(value))}
+                              </text>
+                            );
+                          }}
+                        />
+                      </Bar>
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </CardContent>
@@ -213,34 +262,46 @@ const UnifiedCharts = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="h-[180px] w-full">
+                  <div className="relative h-[180px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={expensesByCategory}
                           cx="50%"
                           cy="50%"
-                          outerRadius={60}
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={4}
+                          cornerRadius={4}
                           dataKey="value"
-                          label={false}
                           labelLine={false}
                         >
                           {expensesByCategory.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.fill}
+                              stroke="hsl(var(--background))"
+                              strokeWidth={2}
+                            />
                           ))}
                         </Pie>
-                        <Tooltip 
+                        <Tooltip
                           formatter={(value: number) => [formatCurrency(value), '']}
                           labelFormatter={(label) => label}
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
                             border: '1px solid hsl(var(--border))',
                             borderRadius: '6px',
                             fontSize: '12px'
                           }}
+                          wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs">
+                      <span className="text-muted-foreground">Total</span>
+                      <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
+                    </div>
                   </div>
                   
                   {/* Legend */}
@@ -255,8 +316,8 @@ const UnifiedCharts = ({
                           <span className="truncate">{category.name}</span>
                         </div>
                         <div className="flex gap-2 text-muted-foreground">
-                          <span>{formatCurrency(category.value)}</span>
-                          <span>({formatPercentage(category.value, totalExpense)})</span>
+                          <span className={!valuesVisible ? 'blur-md select-none' : ''}>{formatCurrency(category.value)}</span>
+                          <span className={!valuesVisible ? 'blur-md select-none' : ''}>({formatPercentage(category.value, totalExpense)})</span>
                         </div>
                       </div>
                     ))}
@@ -292,48 +353,65 @@ const UnifiedCharts = ({
                   <ChartInfoButton chartType="projection" />
                 </div>
                 <div className="text-sm text-muted-foreground mb-4 space-y-1">
-                <p>Média diária: {formatCurrency(dailyAverage)}</p>
-                <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
+                <p>
+                  Média diária:{' '}
+                  <span className={!valuesVisible ? 'blur-md select-none' : ''}>
+                    {formatCurrency(dailyAverage)}
+                  </span>
+                </p>
+                <p>
+                  Projeção mês:{' '}
+                  <span className={!valuesVisible ? 'blur-md select-none' : ''}>
+                    {formatCurrency(projectedTotal)}
+                  </span>
+                </p>
               </div>
               <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <ComposedChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="day" 
+                    <XAxis
+                      dataKey="day"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${value.toFixed(0)}`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
                       }}
+                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                     />
-                    
-                    <ReferenceLine 
-                      y={dailyAverage} 
-                      stroke="hsl(217, 91%, 60%)" 
+
+                    <ReferenceLine
+                      y={dailyAverage}
+                      stroke="hsl(217, 91%, 60%)"
                       strokeDasharray="5 5"
                       strokeWidth={1}
                     />
-                    
-                    <Line
+
+                    <Area
                       name="Gastos Reais"
                       type="monotone"
                       dataKey="actual"
                       stroke="hsl(142, 76%, 36%)"
+                      fill="url(#actualGradient)"
                       strokeWidth={2}
-                      dot={{ fill: "hsl(142, 76%, 36%)", r: 3 }}
                       connectNulls={false}
                     />
                     <Line
@@ -346,9 +424,9 @@ const UnifiedCharts = ({
                       dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
                       connectNulls={false}
                     />
-                  </LineChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
-                </div>
+              </div>
               </div>
             </CardContent>
           </TabsContent>
@@ -375,15 +453,16 @@ const UnifiedCharts = ({
                       tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelFormatter={(label) => label}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
                       }}
+                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                     />
                     
                     <Area

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, Dispatch, SetStateAction } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, DollarSign, Eye, EyeOff } from "lucide-react";
@@ -7,11 +7,12 @@ import { formatCurrency } from "@/utils/currency";
 
 interface FinancialSummaryProps {
   monthlyData: MonthlyData;
+  valuesVisible: boolean;
+  setValuesVisible: Dispatch<SetStateAction<boolean>>;
 }
 
-const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
+const FinancialSummary = ({ monthlyData, valuesVisible, setValuesVisible }: FinancialSummaryProps) => {
   const { totalIncome, totalExpense, balance } = monthlyData;
-  const [valuesVisible, setValuesVisible] = useState(false);
   
   const spentPercentage = totalIncome > 0 ? (totalExpense / totalIncome) * 100 : 0;
   const savingsPercentage = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;

@@ -13,6 +13,7 @@ import { useFinanceData } from "@/hooks/useFinanceData";
 const FinanceDashboard = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'transactions' | 'charts'>('summary');
+  const [valuesVisible, setValuesVisible] = useState(false);
   
   const {
     categories,
@@ -79,7 +80,11 @@ const FinanceDashboard = () => {
         <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Desktop Layout */}
           <div className="hidden sm:block space-y-4 sm:space-y-6">
-            <FinancialSummary monthlyData={currentMonthData} />
+            <FinancialSummary
+              monthlyData={currentMonthData}
+              valuesVisible={valuesVisible}
+              setValuesVisible={setValuesVisible}
+            />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Left Column - Transactions List */}
@@ -96,6 +101,8 @@ const FinanceDashboard = () => {
                 onAddCategory={addCategory}
                 onUpdateCategory={updateCategory}
                 onDeleteCategory={deleteCategory}
+                valuesVisible={valuesVisible}
+                setValuesVisible={setValuesVisible}
               />
               
               {/* Right Column - Unified Charts */}
@@ -106,6 +113,7 @@ const FinanceDashboard = () => {
                 totalExpense={currentMonthData.totalExpense}
                 allTransactions={allTransactions}
                 currentDate={currentDate}
+                valuesVisible={valuesVisible}
               />
             </div>
           </div>
@@ -115,7 +123,11 @@ const FinanceDashboard = () => {
             {/* Tab Content */}
             {activeTab === 'summary' && (
               <div className="space-y-4">
-                <FinancialSummary monthlyData={currentMonthData} />
+                <FinancialSummary
+                  monthlyData={currentMonthData}
+                  valuesVisible={valuesVisible}
+                  setValuesVisible={setValuesVisible}
+                />
               </div>
             )}
             
@@ -134,6 +146,8 @@ const FinanceDashboard = () => {
                   onAddCategory={addCategory}
                   onUpdateCategory={updateCategory}
                   onDeleteCategory={deleteCategory}
+                  valuesVisible={valuesVisible}
+                  setValuesVisible={setValuesVisible}
                 />
               </div>
             )}
@@ -147,6 +161,7 @@ const FinanceDashboard = () => {
                   totalExpense={currentMonthData.totalExpense}
                   allTransactions={allTransactions}
                   currentDate={currentDate}
+                  valuesVisible={valuesVisible}
                 />
               </div>
             )}
