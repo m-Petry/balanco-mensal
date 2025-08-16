@@ -129,11 +129,19 @@ const CategoryManagementDialog = ({
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="income" id="new-income" />
+                    <RadioGroupItem 
+                      value="income" 
+                      id="new-income" 
+                      className="border-green-500 text-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                    />
                     <Label htmlFor="new-income" className="text-sm">Receita</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="expense" id="new-expense" />
+                    <RadioGroupItem 
+                      value="expense" 
+                      id="new-expense" 
+                      className="border-red-500 text-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:text-white"
+                    />
                     <Label htmlFor="new-expense" className="text-sm">Despesa</Label>
                   </div>
                 </RadioGroup>

@@ -99,6 +99,10 @@ const Header = ({
                   <Button
                     variant="outline"
                     className="text-xs px-2 h-8 min-w-[100px] justify-start"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCalendarOpen(!calendarOpen);
+                    }}
                   >
                     <CalendarIcon className="mr-1 h-3 w-3" />
                     {format(currentDateObj, "MMM/yy", { locale: ptBR })}
@@ -111,7 +115,7 @@ const Header = ({
                     onSelect={handleCalendarSelect}
                     defaultMonth={currentDateObj}
                     initialFocus
-                    className="pointer-events-auto"
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -174,6 +178,10 @@ const Header = ({
                     "min-w-[150px] justify-start text-left font-normal",
                     "hover:bg-accent hover:text-accent-foreground"
                   )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCalendarOpen(!calendarOpen);
+                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {capitalizedMonthName}
@@ -186,7 +194,7 @@ const Header = ({
                   onSelect={handleCalendarSelect}
                   defaultMonth={currentDateObj}
                   initialFocus
-                  className="pointer-events-auto"
+                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
