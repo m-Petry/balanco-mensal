@@ -22,6 +22,7 @@ import {
   Line,
   ReferenceLine,
   Tooltip,
+  LabelList,
 } from "recharts";
 
 interface UnifiedChartsProps {
@@ -169,33 +170,65 @@ const UnifiedCharts = ({
                   <ChartInfoButton chartType="income-expense" />
                 </div>
                 <div className="h-[280px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsBarChart data={incomeExpenseData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                      width={35}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [formatCurrency(value), '']}
-                      labelFormatter={(label) => label}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart
+                      data={incomeExpenseData}
+                      margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                      barCategoryGap={40}
+                    >
+                      <defs>
+                        <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.2} />
+                        </linearGradient>
+                        <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.2} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={10}
+                      />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={10}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                        width={35}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => [formatCurrency(value), '']}
+                        labelFormatter={(label) => label}
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={60}>
+                        {incomeExpenseData.map((entry) => (
+                          <Cell
+                            key={entry.name}
+                            fill={
+                              entry.name === 'Receitas'
+                                ? 'url(#incomeGradient)'
+                                : 'url(#expenseGradient)'
+                            }
+                          />
+                        ))}
+                        <LabelList
+                          dataKey="value"
+                          position="top"
+                          formatter={(value: number) => formatCurrency(value)}
+                          fill="hsl(var(--foreground))"
+                          fontSize={12}
+                        />
+                      </Bar>
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </CardContent>
