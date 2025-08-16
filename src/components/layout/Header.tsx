@@ -44,8 +44,8 @@ const Header = ({
   const handleCalendarSelect = (date: Date | undefined) => {
     if (date) {
       onSetMonth(date.getFullYear(), date.getMonth() + 1);
+      setCalendarOpen(false);
     }
-    setCalendarOpen(false);
   };
 
   const handleLock = () => {

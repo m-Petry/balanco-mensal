@@ -100,11 +100,11 @@ const AddTransactionDialog = ({ categories, onAddTransaction, onAddCategory, onU
               setCategoryId(''); // Reset category when type changes
             }}>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="income" id="income" />
+                <RadioGroupItem value="income" id="income" className="border-income data-[state=checked]:bg-income data-[state=checked]:border-income" />
                 <Label htmlFor="income" className="text-income font-medium">Receita</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="expense" id="expense" />
+                <RadioGroupItem value="expense" id="expense" className="border-expense data-[state=checked]:bg-expense data-[state=checked]:border-expense" />
                 <Label htmlFor="expense" className="text-expense font-medium">Despesa</Label>
               </div>
             </RadioGroup>

@@ -21,7 +21,10 @@ interface CategoryManagementDialogProps {
 const predefinedColors = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981',
   '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899',
-  '#f59e0b', '#84cc16', '#64748b', '#059669', '#0891b2'
+  '#f59e0b', '#84cc16', '#64748b', '#059669', '#0891b2',
+  '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#059669',
+  '#0284c7', '#2563eb', '#4f46e5', '#7c3aed', '#c2410c',
+  '#65a30d', '#4b5563', '#0d9488', '#0369a1', '#1d4ed8'
 ];
 
 const CategoryManagementDialog = ({ 
@@ -92,7 +95,7 @@ const CategoryManagementDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" className="h-8 w-8">
           <Settings className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -129,12 +132,12 @@ const CategoryManagementDialog = ({
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="income" id="new-income" />
-                    <Label htmlFor="new-income" className="text-sm">Receita</Label>
+                    <RadioGroupItem value="income" id="new-income" className="border-income data-[state=checked]:bg-income data-[state=checked]:border-income" />
+                    <Label htmlFor="new-income" className="text-sm text-income font-medium">Receita</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="expense" id="new-expense" />
-                    <Label htmlFor="new-expense" className="text-sm">Despesa</Label>
+                    <RadioGroupItem value="expense" id="new-expense" className="border-expense data-[state=checked]:bg-expense data-[state=checked]:border-expense" />
+                    <Label htmlFor="new-expense" className="text-sm text-expense font-medium">Despesa</Label>
                   </div>
                 </RadioGroup>
               </div>
