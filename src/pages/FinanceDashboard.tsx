@@ -9,6 +9,9 @@ import UnifiedCharts from "@/components/finance/UnifiedCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
 import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
+import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const FinanceDashboard = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -157,6 +160,23 @@ const FinanceDashboard = () => {
         <MobileNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}
+        />
+
+        {/* Floating Add Transaction Button */}
+        <AddTransactionDialog
+          categories={categories}
+          onAddTransaction={addTransaction}
+          onAddCategory={addCategory}
+          onUpdateCategory={updateCategory}
+          onDeleteCategory={deleteCategory}
+          trigger={
+            <Button
+              size="icon"
+              className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg sm:hidden z-[60]"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          }
         />
       </div>
     </ThemeProvider>

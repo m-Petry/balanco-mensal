@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Settings } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -23,9 +23,17 @@ interface AddTransactionDialogProps {
   onAddCategory?: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory?: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory?: (id: string) => void;
+  trigger?: React.ReactNode;
 }
 
-const AddTransactionDialog = ({ categories, onAddTransaction, onAddCategory, onUpdateCategory, onDeleteCategory }: AddTransactionDialogProps) => {
+const AddTransactionDialog = ({
+  categories,
+  onAddTransaction,
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  trigger,
+}: AddTransactionDialogProps) => {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [description, setDescription] = useState('');
@@ -82,10 +90,12 @@ const AddTransactionDialog = ({ categories, onAddTransaction, onAddCategory, onU
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Nova Transação
-        </Button>
+        {trigger ?? (
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            Nova Transação
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
