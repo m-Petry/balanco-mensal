@@ -185,7 +185,7 @@ export const useFinanceData = () => {
   };
 
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (updates.description) updateData.description = updates.description;
     if (updates.amount) updateData.amount = updates.amount;
     if (updates.type) updateData.type = updates.type;
