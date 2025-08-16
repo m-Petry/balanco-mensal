@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,12 @@ const CategoryManagementDialog = ({
     type: 'expense' as 'income' | 'expense'
   });
   const { toast } = useToast();
+  const customColorRef = useRef<HTMLInputElement>(null);
+  const editColorRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setNewCategory(prev => ({ ...prev, color: e.target.value }));
+  };
 
   const handleAddCategory = () => {
     if (!newCategory.name.trim()) {
@@ -162,6 +168,19 @@ const CategoryManagementDialog = ({
                     onClick={() => setNewCategory(prev => ({ ...prev, color }))}
                   />
                 ))}
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full border-2 border-muted flex items-center justify-center text-muted-foreground"
+                  onClick={() => customColorRef.current?.click()}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+                <input
+                  type="color"
+                  ref={customColorRef}
+                  className="sr-only"
+                  onChange={handleCustomColorChange}
+                />
               </div>
             </div>
 
@@ -218,9 +237,15 @@ const CategoryManagementDialog = ({
                         </Button>
                       </div>
                       
-                      <Select 
-                        value={category.color} 
-                        onValueChange={(color) => handleUpdateCategory(category.id, 'color', color)}
+                      <Select
+                        value={category.color}
+                        onValueChange={(color) => {
+                          if (color === 'custom') {
+                            editColorRefs.current[category.id]?.click();
+                          } else {
+                            handleUpdateCategory(category.id, 'color', color);
+                          }
+                        }}
                       >
                         <SelectTrigger className="w-24">
                           <SelectValue />
@@ -229,15 +254,29 @@ const CategoryManagementDialog = ({
                           {predefinedColors.map((color) => (
                             <SelectItem key={color} value={color}>
                               <div className="flex items-center gap-2">
-                                <div 
-                                  className="w-4 h-4 rounded-full" 
+                                <div
+                                  className="w-4 h-4 rounded-full"
                                   style={{ backgroundColor: color }}
                                 />
                               </div>
                             </SelectItem>
                           ))}
+                          <SelectItem value="custom">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-full border flex items-center justify-center">
+                                <Plus className="w-3 h-3" />
+                              </div>
+                              <span>Personalizar</span>
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
+                      <input
+                        type="color"
+                        ref={(el) => (editColorRefs.current[category.id] = el)}
+                        className="sr-only"
+                        onChange={(e) => handleUpdateCategory(category.id, 'color', e.target.value)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -286,9 +325,15 @@ const CategoryManagementDialog = ({
                         </Button>
                       </div>
                       
-                      <Select 
-                        value={category.color} 
-                        onValueChange={(color) => handleUpdateCategory(category.id, 'color', color)}
+                      <Select
+                        value={category.color}
+                        onValueChange={(color) => {
+                          if (color === 'custom') {
+                            editColorRefs.current[category.id]?.click();
+                          } else {
+                            handleUpdateCategory(category.id, 'color', color);
+                          }
+                        }}
                       >
                         <SelectTrigger className="w-24">
                           <SelectValue />
@@ -297,15 +342,29 @@ const CategoryManagementDialog = ({
                           {predefinedColors.map((color) => (
                             <SelectItem key={color} value={color}>
                               <div className="flex items-center gap-2">
-                                <div 
-                                  className="w-4 h-4 rounded-full" 
+                                <div
+                                  className="w-4 h-4 rounded-full"
                                   style={{ backgroundColor: color }}
                                 />
                               </div>
                             </SelectItem>
                           ))}
+                          <SelectItem value="custom">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-full border flex items-center justify-center">
+                                <Plus className="w-3 h-3" />
+                              </div>
+                              <span>Personalizar</span>
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
+                      <input
+                        type="color"
+                        ref={(el) => (editColorRefs.current[category.id] = el)}
+                        className="sr-only"
+                        onChange={(e) => handleUpdateCategory(category.id, 'color', e.target.value)}
+                      />
                     </div>
                   ))}
                 </div>
