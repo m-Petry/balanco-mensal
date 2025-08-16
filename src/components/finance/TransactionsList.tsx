@@ -55,7 +55,7 @@ const TransactionsList = ({
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const INITIAL_VISIBLE_COUNT = 6;
-  const STEP_SIZE = 10;
+  const [showAll, setShowAll] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [valuesVisible, setValuesVisible] = useState(false);
   const { toast } = useToast();
@@ -155,16 +155,16 @@ const TransactionsList = ({
     }
   });
 
-  const visibleTransactions = sortedTransactions.slice(0, visibleCount);
-  const hasMore = sortedTransactions.length > visibleCount;
-  const canCollapse = visibleCount > INITIAL_VISIBLE_COUNT;
+  const visibleTransactions = showAll ? sortedTransactions : sortedTransactions.slice(0, INITIAL_VISIBLE_COUNT);
+  const hasMore = sortedTransactions.length > INITIAL_VISIBLE_COUNT;
 
-  const handleShowMore = () => {
-    setVisibleCount(prev => Math.min(prev + STEP_SIZE, sortedTransactions.length));
+  const handleShowAll = () => {
+    setShowAll(true);
   };
 
-  const handleShowLess = () => {
-    setVisibleCount(prev => Math.max(prev - STEP_SIZE, INITIAL_VISIBLE_COUNT));
+  const handleCollapse = () => {
+    setShowAll(false);
+    setVisibleCount(INITIAL_VISIBLE_COUNT);
   };
 
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -425,31 +425,18 @@ const TransactionsList = ({
                               />
                             </div>
 
-                             <div className="space-y-2">
-                               <div className="flex items-center justify-between">
-                                 <Label>Categoria</Label>
-                                 {onAddCategory && onUpdateCategory && onDeleteCategory && (
-                                   <Dialog>
-                                     <DialogTrigger asChild>
-                                       <Button
-                                         variant="outline"
-                                         size="sm"
-                                         className="h-6 w-6 p-0"
-                                       >
-                                         <Settings className="w-3 h-3" />
-                                       </Button>
-                                     </DialogTrigger>
-                                     <DialogContent className="sm:max-w-lg">
-                                       <CategoryManagementDialog
-                                         categories={categories}
-                                         onAddCategory={onAddCategory}
-                                         onUpdateCategory={onUpdateCategory}
-                                         onDeleteCategory={onDeleteCategory}
-                                       />
-                                     </DialogContent>
-                                   </Dialog>
-                                 )}
-                               </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <Label>Categoria</Label>
+                                  {onAddCategory && onUpdateCategory && onDeleteCategory && (
+                                    <CategoryManagementDialog
+                                      categories={categories}
+                                      onAddCategory={onAddCategory}
+                                      onUpdateCategory={onUpdateCategory}
+                                      onDeleteCategory={onDeleteCategory}
+                                    />
+                                  )}
+                                </div>
                                <Select value={categoryId} onValueChange={setCategoryId}>
                                  <SelectTrigger>
                                    <SelectValue />
@@ -529,28 +516,28 @@ const TransactionsList = ({
             </div>
 
             {/* Controles de expansão ancorados no rodapé do CardContent */}
-            {(hasMore || canCollapse) && (
+            {(hasMore || showAll) && (
               <div className="mt-auto flex justify-center gap-2 pt-4 pb-4 border-t">
-                {canCollapse && (
+                {showAll && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleShowLess}
+                    onClick={handleCollapse}
                     className="flex items-center gap-1"
                   >
                     <Minus className="w-4 h-4" />
-                    Mostrar menos
+                    Recolher
                   </Button>
                 )}
-                {hasMore && (
+                {hasMore && !showAll && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleShowMore}
+                    onClick={handleShowAll}
                     className="flex items-center gap-1"
                   >
                     <Plus className="w-4 h-4" />
-                    Mostrar mais
+                    Mostrar tudo
                   </Button>
                 )}
               </div>

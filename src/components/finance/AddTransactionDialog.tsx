@@ -133,25 +133,12 @@ const AddTransactionDialog = ({ categories, onAddTransaction, onAddCategory, onU
             <div className="flex items-center justify-between">
               <Label>Categoria *</Label>
               {onAddCategory && onUpdateCategory && onDeleteCategory && (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                    >
-                      <Settings className="w-3 h-3" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-lg">
-                    <CategoryManagementDialog
-                      categories={categories}
-                      onAddCategory={onAddCategory}
-                      onUpdateCategory={onUpdateCategory}
-                      onDeleteCategory={onDeleteCategory}
-                    />
-                  </DialogContent>
-                </Dialog>
+                <CategoryManagementDialog
+                  categories={categories}
+                  onAddCategory={onAddCategory}
+                  onUpdateCategory={onUpdateCategory}
+                  onDeleteCategory={onDeleteCategory}
+                />
               )}
             </div>
             <Select value={categoryId} onValueChange={setCategoryId}>
