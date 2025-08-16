@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Plus, Trash2, Edit2 } from "lucide-react";
+import { Settings, Plus, Trash2, Edit2, Check } from "lucide-react";
 import { Category } from "@/types/finance";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +18,7 @@ interface CategoryManagementDialogProps {
   onDeleteCategory: (id: string) => void;
 }
 
-const predefinedColors = [
+const defaultColors = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981',
   '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899',
   '#f59e0b', '#84cc16', '#64748b', '#059669', '#0891b2'
@@ -32,9 +32,11 @@ const CategoryManagementDialog = ({
 }: CategoryManagementDialogProps) => {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [paletteColors, setPaletteColors] = useState<string[]>(defaultColors);
+  const [pendingCustomColor, setPendingCustomColor] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
-    color: predefinedColors[0],
+    color: defaultColors[0],
     type: 'expense' as 'income' | 'expense'
   });
   const { toast } = useToast();
@@ -42,7 +44,15 @@ const CategoryManagementDialog = ({
   const editColorRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setNewCategory(prev => ({ ...prev, color: e.target.value }));
+    setPendingCustomColor(e.target.value);
+  };
+
+  const handleConfirmCustomColor = () => {
+    if (pendingCustomColor) {
+      setPaletteColors(prev => [...prev, pendingCustomColor]);
+      setNewCategory(prev => ({ ...prev, color: pendingCustomColor }));
+      setPendingCustomColor(null);
+    }
   };
 
   const handleAddCategory = () => {
@@ -63,7 +73,7 @@ const CategoryManagementDialog = ({
 
     setNewCategory({
       name: '',
-      color: predefinedColors[0],
+      color: paletteColors[0],
       type: 'expense'
     });
 
@@ -157,7 +167,7 @@ const CategoryManagementDialog = ({
             <div className="space-y-2">
               <Label>Cor</Label>
               <div className="flex flex-wrap gap-2">
-                {predefinedColors.map((color) => (
+                {paletteColors.map((color) => (
                   <button
                     key={color}
                     type="button"
@@ -168,13 +178,25 @@ const CategoryManagementDialog = ({
                     onClick={() => setNewCategory(prev => ({ ...prev, color }))}
                   />
                 ))}
-                <button
-                  type="button"
-                  className="w-8 h-8 rounded-full border-2 border-muted flex items-center justify-center text-muted-foreground"
-                  onClick={() => customColorRef.current?.click()}
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+                {pendingCustomColor ? (
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-8 h-8 rounded-full border-2 border-foreground"
+                      style={{ backgroundColor: pendingCustomColor }}
+                    />
+                    <Button type="button" size="icon" className="h-8 w-8" onClick={handleConfirmCustomColor}>
+                      <Check className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="w-8 h-8 rounded-full border-2 border-muted flex items-center justify-center text-muted-foreground"
+                    onClick={() => customColorRef.current?.click()}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
                 <input
                   type="color"
                   ref={customColorRef}
@@ -251,7 +273,7 @@ const CategoryManagementDialog = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {predefinedColors.map((color) => (
+                          {paletteColors.map((color) => (
                             <SelectItem key={color} value={color}>
                               <div className="flex items-center gap-2">
                                 <div
@@ -275,7 +297,13 @@ const CategoryManagementDialog = ({
                         type="color"
                         ref={(el) => (editColorRefs.current[category.id] = el)}
                         className="sr-only"
-                        onChange={(e) => handleUpdateCategory(category.id, 'color', e.target.value)}
+                        onChange={(e) => {
+                          const color = e.target.value;
+                          if (!paletteColors.includes(color)) {
+                            setPaletteColors(prev => [...prev, color]);
+                          }
+                          handleUpdateCategory(category.id, 'color', color);
+                        }}
                       />
                     </div>
                   ))}
@@ -339,7 +367,7 @@ const CategoryManagementDialog = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {predefinedColors.map((color) => (
+                          {paletteColors.map((color) => (
                             <SelectItem key={color} value={color}>
                               <div className="flex items-center gap-2">
                                 <div
@@ -363,7 +391,13 @@ const CategoryManagementDialog = ({
                         type="color"
                         ref={(el) => (editColorRefs.current[category.id] = el)}
                         className="sr-only"
-                        onChange={(e) => handleUpdateCategory(category.id, 'color', e.target.value)}
+                        onChange={(e) => {
+                          const color = e.target.value;
+                          if (!paletteColors.includes(color)) {
+                            setPaletteColors(prev => [...prev, color]);
+                          }
+                          handleUpdateCategory(category.id, 'color', color);
+                        }}
                       />
                     </div>
                   ))}
