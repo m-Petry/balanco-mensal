@@ -213,27 +213,34 @@ const UnifiedCharts = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="h-[180px] w-full">
+                  <div className="relative h-[180px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={expensesByCategory}
                           cx="50%"
                           cy="50%"
-                          outerRadius={60}
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={4}
+                          cornerRadius={4}
                           dataKey="value"
-                          label={false}
                           labelLine={false}
                         >
                           {expensesByCategory.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.fill}
+                              stroke="hsl(var(--background))"
+                              strokeWidth={2}
+                            />
                           ))}
                         </Pie>
-                        <Tooltip 
+                        <Tooltip
                           formatter={(value: number) => [formatCurrency(value), '']}
                           labelFormatter={(label) => label}
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
                             border: '1px solid hsl(var(--border))',
                             borderRadius: '6px',
                             fontSize: '12px'
@@ -241,6 +248,10 @@ const UnifiedCharts = ({
                         />
                       </PieChart>
                     </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs">
+                      <span className="text-muted-foreground">Total</span>
+                      <span className="font-medium">{formatCurrency(totalExpense)}</span>
+                    </div>
                   </div>
                   
                   {/* Legend */}
