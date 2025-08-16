@@ -1,13 +1,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
 import CategoryManagementDialog from "@/components/finance/CategoryManagementDialog";
 import { Category, Transaction } from "@/types/finance";
@@ -41,11 +42,11 @@ const Header = ({
   const monthName = format(currentDateObj, "MMMM yyyy", { locale: ptBR });
   const capitalizedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-  const handleCalendarSelect = (date: Date | undefined) => {
+  const handleCalendarSelect = (date: Date | null) => {
     if (date) {
       onSetMonth(date.getFullYear(), date.getMonth() + 1);
+      setCalendarOpen(false);
     }
-    setCalendarOpen(false);
   };
 
   const handleLock = () => {
@@ -99,24 +100,23 @@ const Header = ({
                   <Button
                     variant="outline"
                     className="text-xs px-2 h-8 min-w-[100px] justify-start"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCalendarOpen(!calendarOpen);
-                    }}
                   >
                     <CalendarIcon className="mr-1 h-3 w-3" />
                     {format(currentDateObj, "MMM/yy", { locale: ptBR })}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="center">
-                  <Calendar
-                    mode="single"
-                    selected={currentDateObj}
-                    onSelect={handleCalendarSelect}
-                    defaultMonth={currentDateObj}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
+                  <div className="p-3">
+                    <DatePicker
+                      selected={currentDateObj}
+                      onChange={handleCalendarSelect}
+                      locale="pt-BR"
+                      showMonthYearPicker
+                      dateFormat="MM/yyyy"
+                      inline
+                      className="bg-background text-foreground"
+                    />
+                  </div>
                 </PopoverContent>
               </Popover>
 
@@ -178,24 +178,23 @@ const Header = ({
                     "min-w-[150px] justify-start text-left font-normal",
                     "hover:bg-accent hover:text-accent-foreground"
                   )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCalendarOpen(!calendarOpen);
-                  }}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {capitalizedMonthName}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="center">
-                <Calendar
-                  mode="single"
-                  selected={currentDateObj}
-                  onSelect={handleCalendarSelect}
-                  defaultMonth={currentDateObj}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
+                <div className="p-3">
+                  <DatePicker
+                    selected={currentDateObj}
+                    onChange={handleCalendarSelect}
+                    locale="pt-BR"
+                    showMonthYearPicker
+                    dateFormat="MM/yyyy"
+                    inline
+                    className="bg-background text-foreground"
+                  />
+                </div>
               </PopoverContent>
             </Popover>
 
