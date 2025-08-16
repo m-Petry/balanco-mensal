@@ -174,7 +174,7 @@ const UnifiedCharts = ({
                     <RechartsBarChart
                       data={incomeExpenseData}
                       margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
-                      barCategoryGap={40}
+                      barCategoryGap={20}
                     >
                       <defs>
                         <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -208,7 +208,7 @@ const UnifiedCharts = ({
                           fontSize: '12px'
                         }}
                       />
-                      <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={60}>
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={80}>
                         {incomeExpenseData.map((entry) => (
                           <Cell
                             key={entry.name}
