@@ -18,11 +18,11 @@ import {
   Cell,
   AreaChart,
   Area,
-  LineChart,
   Line,
   ReferenceLine,
   Tooltip,
   LabelList,
+  ComposedChart,
 } from "recharts";
 
 interface UnifiedChartsProps {
@@ -341,43 +341,49 @@ const UnifiedCharts = ({
               </div>
               <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <ComposedChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="day" 
+                    <XAxis
+                      dataKey="day"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${value.toFixed(0)}`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
                       }}
                     />
-                    
-                    <ReferenceLine 
-                      y={dailyAverage} 
-                      stroke="hsl(217, 91%, 60%)" 
+
+                    <ReferenceLine
+                      y={dailyAverage}
+                      stroke="hsl(217, 91%, 60%)"
                       strokeDasharray="5 5"
                       strokeWidth={1}
                     />
-                    
-                    <Line
+
+                    <Area
                       name="Gastos Reais"
                       type="monotone"
                       dataKey="actual"
                       stroke="hsl(142, 76%, 36%)"
+                      fill="url(#actualGradient)"
                       strokeWidth={2}
-                      dot={{ fill: "hsl(142, 76%, 36%)", r: 3 }}
                       connectNulls={false}
                     />
                     <Line
@@ -390,9 +396,9 @@ const UnifiedCharts = ({
                       dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
                       connectNulls={false}
                     />
-                  </LineChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
-                </div>
+              </div>
               </div>
             </CardContent>
           </TabsContent>
