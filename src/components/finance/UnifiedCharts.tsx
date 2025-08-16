@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, TrendingUp, PieChart as PieChartIcon, Target } from "lucide-react";
+import ChartInfoButton from "./ChartInfoButton";
 import { formatCurrency } from "@/utils/currency";
 import { Transaction, Category } from "@/types/finance";
 import { subMonths, format, getDaysInMonth } from "date-fns";
@@ -163,7 +164,11 @@ const UnifiedCharts = ({
 
           <TabsContent value="income-expense" className="mt-0">
             <CardContent className="pt-0">
-              <div className="h-[280px] w-full">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="income-expense" />
+                </div>
+                <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsBarChart data={incomeExpenseData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -191,13 +196,18 @@ const UnifiedCharts = ({
                     <Bar dataKey="value" radius={[4, 4, 0, 0]} />
                   </RechartsBarChart>
                 </ResponsiveContainer>
+                </div>
               </div>
             </CardContent>
           </TabsContent>
 
           <TabsContent value="distribution" className="mt-0">
             <CardContent className="pt-0">
-              {expensesByCategory.length === 0 ? (
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="distribution" />
+                </div>
+                {expensesByCategory.length === 0 ? (
                 <div className="h-[280px] flex items-center justify-center text-muted-foreground">
                   Nenhuma despesa encontrada
                 </div>
@@ -216,7 +226,7 @@ const UnifiedCharts = ({
                           labelLine={false}
                         >
                           {expensesByCategory.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                            <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
                           ))}
                         </Pie>
                         <Tooltip 
@@ -252,7 +262,8 @@ const UnifiedCharts = ({
                     ))}
                   </div>
                 </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </TabsContent>
         </Tabs>
@@ -276,7 +287,11 @@ const UnifiedCharts = ({
 
           <TabsContent value="projection" className="mt-0">
             <CardContent className="pt-0">
-              <div className="text-sm text-muted-foreground mb-4 space-y-1">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="projection" />
+                </div>
+                <div className="text-sm text-muted-foreground mb-4 space-y-1">
                 <p>Média diária: {formatCurrency(dailyAverage)}</p>
                 <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
               </div>
@@ -333,13 +348,18 @@ const UnifiedCharts = ({
                     />
                   </LineChart>
                 </ResponsiveContainer>
+                </div>
               </div>
             </CardContent>
           </TabsContent>
 
           <TabsContent value="trend" className="mt-0">
             <CardContent className="pt-0">
-              <div className="h-[280px] w-full">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="trend" />
+                </div>
+                <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -395,6 +415,7 @@ const UnifiedCharts = ({
                     />
                   </AreaChart>
                 </ResponsiveContainer>
+                </div>
               </div>
             </CardContent>
           </TabsContent>
