@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import PasswordLock from "@/components/auth/PasswordLock";
 import Header from "@/components/layout/Header";
+import MobileNavigation from "@/components/layout/MobileNavigation";
 import FinancialSummary from "@/components/finance/FinancialSummary";
 import UnifiedCharts from "@/components/finance/UnifiedCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
@@ -11,6 +12,7 @@ import { useFinanceData } from "@/hooks/useFinanceData";
 
 const FinanceDashboard = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [activeTab, setActiveTab] = useState<'summary' | 'transactions' | 'charts'>('summary');
   
   const {
     categories,
@@ -75,37 +77,87 @@ const FinanceDashboard = () => {
         />
         
         <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
-          <FinancialSummary monthlyData={currentMonthData} />
-          
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {/* Left Column - Transactions List */}
-            <TransactionsList
-              transactions={currentMonthData.transactions}
-              categories={categories}
-              onUpdateTransaction={updateTransaction}
-              onDeleteTransaction={deleteTransaction}
-              previousBalance={previousBalance}
-              showBalancePrompt={showBalancePrompt}
-              onAcceptBalance={handleAcceptPreviousBalance}
-              onRejectBalance={handleRejectPreviousBalance}
-              currentDate={currentDate}
-              onAddCategory={addCategory}
-              onUpdateCategory={updateCategory}
-              onDeleteCategory={deleteCategory}
-            />
+          {/* Desktop Layout */}
+          <div className="hidden sm:block space-y-4 sm:space-y-6">
+            <FinancialSummary monthlyData={currentMonthData} />
             
-            {/* Right Column - Unified Charts */}
-            <UnifiedCharts
-              transactions={currentMonthData.transactions}
-              categories={categories}
-              totalIncome={currentMonthData.totalIncome}
-              totalExpense={currentMonthData.totalExpense}
-              allTransactions={allTransactions}
-              currentDate={currentDate}
-            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Left Column - Transactions List */}
+              <TransactionsList
+                transactions={currentMonthData.transactions}
+                categories={categories}
+                onUpdateTransaction={updateTransaction}
+                onDeleteTransaction={deleteTransaction}
+                previousBalance={previousBalance}
+                showBalancePrompt={showBalancePrompt}
+                onAcceptBalance={handleAcceptPreviousBalance}
+                onRejectBalance={handleRejectPreviousBalance}
+                currentDate={currentDate}
+                onAddCategory={addCategory}
+                onUpdateCategory={updateCategory}
+                onDeleteCategory={deleteCategory}
+              />
+              
+              {/* Right Column - Unified Charts */}
+              <UnifiedCharts
+                transactions={currentMonthData.transactions}
+                categories={categories}
+                totalIncome={currentMonthData.totalIncome}
+                totalExpense={currentMonthData.totalExpense}
+                allTransactions={allTransactions}
+                currentDate={currentDate}
+              />
+            </div>
+          </div>
+
+          {/* Mobile Layout with Tabs */}
+          <div className="sm:hidden pb-20">
+            {/* Tab Content */}
+            {activeTab === 'summary' && (
+              <div className="space-y-4">
+                <FinancialSummary monthlyData={currentMonthData} />
+              </div>
+            )}
+            
+            {activeTab === 'transactions' && (
+              <div className="space-y-4">
+                <TransactionsList
+                  transactions={currentMonthData.transactions}
+                  categories={categories}
+                  onUpdateTransaction={updateTransaction}
+                  onDeleteTransaction={deleteTransaction}
+                  previousBalance={previousBalance}
+                  showBalancePrompt={showBalancePrompt}
+                  onAcceptBalance={handleAcceptPreviousBalance}
+                  onRejectBalance={handleRejectPreviousBalance}
+                  currentDate={currentDate}
+                  onAddCategory={addCategory}
+                  onUpdateCategory={updateCategory}
+                  onDeleteCategory={deleteCategory}
+                />
+              </div>
+            )}
+            
+            {activeTab === 'charts' && (
+              <div className="space-y-4">
+                <UnifiedCharts
+                  transactions={currentMonthData.transactions}
+                  categories={categories}
+                  totalIncome={currentMonthData.totalIncome}
+                  totalExpense={currentMonthData.totalExpense}
+                  allTransactions={allTransactions}
+                  currentDate={currentDate}
+                />
+              </div>
+            )}
           </div>
         </main>
+
+        {/* Mobile Navigation */}
+        <MobileNavigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </div>
     </ThemeProvider>
   );

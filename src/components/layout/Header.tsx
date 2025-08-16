@@ -55,38 +55,38 @@ const Header = ({
     <header className="border-b bg-card">
       <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
         {/* Mobile Layout */}
-        <div className="flex flex-col gap-3 sm:hidden">
+        <div className="flex flex-col gap-2 sm:hidden">
           {/* Top Row - Logo and Essential Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-primary-foreground" />
+              <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
+                <DollarSign className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
-              <h1 className="text-lg font-bold text-foreground">Finanças</h1>
+              <h1 className="text-base font-semibold text-foreground">Finanças</h1>
             </div>
             <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handleLock}
-                className="h-8 w-8"
+                className="h-7 w-7"
                 title="Bloquear aplicação"
               >
-                <Lock className="w-4 h-4" />
+                <Lock className="w-3.5 h-3.5" />
               </Button>
               <ThemeToggle />
             </div>
           </div>
           
           {/* Bottom Row - Month Navigation and Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             {/* Month Navigation */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-1">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => onNavigateMonth('prev')}
-                className="h-8 w-8"
+                className="h-7 w-7 flex-shrink-0"
               >
                 <ChevronLeft className="w-3 h-3" />
               </Button>
@@ -95,10 +95,10 @@ const Header = ({
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="text-xs px-2 h-8 min-w-[100px] justify-start"
+                    className="text-xs px-2 h-7 flex-1 min-w-0 justify-center"
                   >
-                    <CalendarIcon className="mr-1 h-3 w-3" />
-                    {format(currentDateObj, "MMM/yy", { locale: ptBR })}
+                    <CalendarIcon className="mr-1 h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">{format(currentDateObj, "MMM/yy", { locale: ptBR })}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="center">
@@ -116,14 +116,14 @@ const Header = ({
                 variant="outline"
                 size="icon"
                 onClick={() => onNavigateMonth('next')}
-                className="h-8 w-8"
+                className="h-7 w-7 flex-shrink-0"
               >
                 <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
             
             {/* Action Buttons */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <AddTransactionDialog 
                 categories={categories}
                 onAddTransaction={onAddTransaction}
