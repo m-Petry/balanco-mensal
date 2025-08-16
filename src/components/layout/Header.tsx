@@ -2,13 +2,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
 import CategoryManagementDialog from "@/components/finance/CategoryManagementDialog";
 import { Category, Transaction } from "@/types/finance";
@@ -36,16 +35,13 @@ const Header = ({
   onDeleteCategory,
   onLock
 }: HeaderProps) => {
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  
   const currentDateObj = new Date(currentDate.year, currentDate.month - 1);
   const monthName = format(currentDateObj, "MMMM yyyy", { locale: ptBR });
   const capitalizedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-  const handleCalendarSelect = (date: Date | null) => {
+  const handleCalendarSelect = (date: Date | undefined) => {
     if (date) {
       onSetMonth(date.getFullYear(), date.getMonth() + 1);
-      setCalendarOpen(false);
     }
   };
 
@@ -95,7 +91,7 @@ const Header = ({
                 <ChevronLeft className="w-3 h-3" />
               </Button>
 
-              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -106,17 +102,13 @@ const Header = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="center">
-                  <div className="p-3">
-                    <DatePicker
-                      selected={currentDateObj}
-                      onChange={handleCalendarSelect}
-                      locale="pt-BR"
-                      showMonthYearPicker
-                      dateFormat="MM/yyyy"
-                      inline
-                      className="bg-background text-foreground"
-                    />
-                  </div>
+                  <Calendar
+                    mode="single"
+                    selected={currentDateObj}
+                    onSelect={handleCalendarSelect}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
                 </PopoverContent>
               </Popover>
 
@@ -170,7 +162,7 @@ const Header = ({
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -184,17 +176,13 @@ const Header = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="center">
-                <div className="p-3">
-                  <DatePicker
-                    selected={currentDateObj}
-                    onChange={handleCalendarSelect}
-                    locale="pt-BR"
-                    showMonthYearPicker
-                    dateFormat="MM/yyyy"
-                    inline
-                    className="bg-background text-foreground"
-                  />
-                </div>
+                <Calendar
+                  mode="single"
+                  selected={currentDateObj}
+                  onSelect={handleCalendarSelect}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
               </PopoverContent>
             </Popover>
 
