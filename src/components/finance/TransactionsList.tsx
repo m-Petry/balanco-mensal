@@ -164,6 +164,7 @@ const TransactionsList = ({
 
   const handleCollapse = () => {
     setShowAll(false);
+    setVisibleCount(INITIAL_VISIBLE_COUNT);
   };
 
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -327,20 +328,11 @@ const TransactionsList = ({
         ) : (
           <>
             {/* Lista ocupa o espaço e empurra os controles para baixo */}
-            <div className={cn(
-              "space-y-3 flex-1 transition-all duration-500 ease-out",
-              showAll && "animate-fade-in"
-            )}>
-              {visibleTransactions.map((transaction, index) => (
+            <div className="space-y-3 flex-1">
+              {visibleTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className={cn(
-                    "flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-all duration-300 ease-out",
-                    showAll && index >= INITIAL_VISIBLE_COUNT && "animate-fade-in"
-                  )}
-                  style={{
-                    animationDelay: showAll && index >= INITIAL_VISIBLE_COUNT ? `${(index - INITIAL_VISIBLE_COUNT) * 50}ms` : '0ms'
-                  }}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div 
@@ -523,28 +515,29 @@ const TransactionsList = ({
               ))}
             </div>
 
-            {/* Controles de expansão - fixos no final */}
-            {hasMore && (
-              <div className="pt-4 mt-4 border-t bg-card/50 backdrop-blur-sm">
-                {showAll ? (
+            {/* Controles de expansão ancorados no rodapé do CardContent */}
+            {(hasMore || showAll) && (
+              <div className="mt-auto flex justify-center gap-2 pt-4 pb-4 border-t">
+                {showAll && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCollapse}
-                    className="w-full flex items-center gap-2 hover:bg-muted/80 transition-all duration-300"
+                    className="flex items-center gap-1"
                   >
                     <Minus className="w-4 h-4" />
-                    Recolher ({sortedTransactions.length - INITIAL_VISIBLE_COUNT} itens ocultos)
+                    Recolher
                   </Button>
-                ) : (
+                )}
+                {hasMore && !showAll && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleShowAll}
-                    className="w-full flex items-center gap-2 hover:bg-muted/80 transition-all duration-300 animate-pulse"
+                    className="flex items-center gap-1"
                   >
                     <Plus className="w-4 h-4" />
-                    Mostrar tudo ({sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)
+                    Mostrar tudo
                   </Button>
                 )}
               </div>
