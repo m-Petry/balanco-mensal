@@ -23,6 +23,7 @@ import {
   Tooltip,
   LabelList,
   ComposedChart,
+  type LabelProps,
 } from "recharts";
 
 interface UnifiedChartsProps {
@@ -34,7 +35,7 @@ interface UnifiedChartsProps {
   currentDate: Date | { year: number; month: number };
 }
 
-const UnifiedCharts = ({ 
+const UnifiedCharts = ({
   transactions, 
   categories, 
   totalIncome, 
@@ -44,6 +45,8 @@ const UnifiedCharts = ({
 }: UnifiedChartsProps) => {
   // Convert currentDate to Date object if needed
   const dateObj = currentDate instanceof Date ? currentDate : new Date(currentDate.year, currentDate.month - 1);
+
+  const valuesVisible = true;
 
   // Income vs Expense chart data
   const incomeExpenseData = [
@@ -201,6 +204,7 @@ const UnifiedCharts = ({
                       <Tooltip
                         formatter={(value: number) => [formatCurrency(value), '']}
                         labelFormatter={(label) => label}
+                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                         contentStyle={{
                           backgroundColor: 'hsl(var(--card))',
                           border: '1px solid hsl(var(--border))',
@@ -222,9 +226,23 @@ const UnifiedCharts = ({
                         <LabelList
                           dataKey="value"
                           position="top"
-                          formatter={(value: number) => formatCurrency(value)}
-                          fill="hsl(var(--foreground))"
-                          fontSize={12}
+                          content={(props: LabelProps) => {
+                            const { value, viewBox } = props;
+                            if (!viewBox) return null;
+                            const { x, y, width } = viewBox;
+                            return (
+                              <text
+                                x={x + width / 2}
+                                y={y - 4}
+                                textAnchor="middle"
+                                fill="hsl(var(--foreground))"
+                                fontSize={12}
+                                className={!valuesVisible ? 'blur-sm select-none' : ''}
+                              >
+                                {formatCurrency(Number(value))}
+                              </text>
+                            );
+                          }}
                         />
                       </Bar>
                     </RechartsBarChart>
@@ -272,6 +290,7 @@ const UnifiedCharts = ({
                         <Tooltip
                           formatter={(value: number) => [formatCurrency(value), '']}
                           labelFormatter={(label) => label}
+                          wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
                             border: '1px solid hsl(var(--border))',
@@ -283,7 +302,7 @@ const UnifiedCharts = ({
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-xs">
                       <span className="text-muted-foreground">Total</span>
-                      <span className="font-medium">{formatCurrency(totalExpense)}</span>
+                      <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
                     </div>
                   </div>
                   
@@ -298,7 +317,7 @@ const UnifiedCharts = ({
                           />
                           <span className="truncate">{category.name}</span>
                         </div>
-                        <div className="flex gap-2 text-muted-foreground">
+                        <div className={`flex gap-2 text-muted-foreground ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
                           <span>{formatCurrency(category.value)}</span>
                           <span>({formatPercentage(category.value, totalExpense)})</span>
                         </div>
@@ -335,10 +354,10 @@ const UnifiedCharts = ({
                 <div className="absolute top-2 right-2 z-10">
                   <ChartInfoButton chartType="projection" />
                 </div>
-                <div className="text-sm text-muted-foreground mb-4 space-y-1">
-                <p>Média diária: {formatCurrency(dailyAverage)}</p>
-                <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
-              </div>
+                <div className={`text-sm text-muted-foreground mb-4 space-y-1 ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+                  <p>Média diária: {formatCurrency(dailyAverage)}</p>
+                  <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
+                </div>
               <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
@@ -362,6 +381,7 @@ const UnifiedCharts = ({
                     />
                     <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
+                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                       contentStyle={{
                         backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
@@ -425,11 +445,12 @@ const UnifiedCharts = ({
                       tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelFormatter={(label) => label}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
