@@ -342,11 +342,13 @@ const TransactionsList = ({
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium">{transaction.description}</span>
-                        <Badge 
-                          variant={transaction.type === 'income' ? 'default' : 'secondary'}
+                        <Badge
+                          variant="outline"
                           className={cn(
                             "cursor-pointer transition-colors",
-                            transaction.type === 'income' ? 'bg-income text-white' : 'bg-expense text-white'
+                            transaction.type === 'income'
+                              ? 'text-income border-income/50 bg-income/10 hover:bg-income/20'
+                              : 'text-expense border-expense/50 bg-expense/10 hover:bg-expense/20'
                           )}
                           onClick={() => handleCategoryFilter(transaction.categoryId)}
                         >
