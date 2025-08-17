@@ -269,6 +269,7 @@ const UnifiedCharts = ({
                       <PieChart>
                         <Pie
                           data={expensesByCategory}
+                          key={expensesByCategory.map(c => c.name).join('-')}
                           cx="50%"
                           cy="50%"
                           innerRadius={50}
@@ -278,9 +279,9 @@ const UnifiedCharts = ({
                           dataKey="value"
                           labelLine={false}
                         >
-                          {expensesByCategory.map((entry, index) => (
+                          {expensesByCategory.map((entry) => (
                             <Cell
-                              key={`cell-${index}`}
+                              key={`cell-${entry.name}`}
                               fill={entry.fill}
                               stroke="hsl(var(--background))"
                               strokeWidth={2}
@@ -308,10 +309,10 @@ const UnifiedCharts = ({
                   
                   {/* Legend */}
                   <div className="grid grid-cols-1 gap-1 max-h-20 overflow-y-auto">
-                    {expensesByCategory.slice(0, 5).map((category, index) => (
-                      <div key={index} className="flex items-center justify-between text-xs">
+                    {expensesByCategory.map((category) => (
+                      <div key={category.name} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
-                          <div 
+                          <div
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: category.fill }}
                           />
