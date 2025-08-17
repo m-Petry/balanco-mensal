@@ -15,7 +15,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/currency';
-import { CategoryManagementDialog } from './CategoryManagementDialog';
+import CategoryManagementDialog from './CategoryManagementDialog';
 import PreviousBalancePrompt from './PreviousBalancePrompt';
 import { useSpring, animated, useTrail, config, useTransition } from '@react-spring/web';
 
