@@ -33,15 +33,19 @@ const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
 
 
   return (
-    <div className="relative space-y-4 pt-6">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleValuesVisibility}
-        className="absolute top-0 right-0 h-8 w-8 p-0"
-      >
-        {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-      </Button>
+    <div className="space-y-4">
+      {/* Toggle Button */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleValuesVisibility}
+          className="gap-2"
+        >
+          {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          {valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Income */}
