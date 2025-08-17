@@ -26,7 +26,7 @@ const MobileNavigation = ({ activeTab, onTabChange }: MobileNavigationProps) => 
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-sm border-t border-border/50 z-50 sm:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 sm:hidden">
       <div className="grid grid-cols-3 gap-1 p-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -35,16 +35,16 @@ const MobileNavigation = ({ activeTab, onTabChange }: MobileNavigationProps) => 
           return (
             <Button
               key={tab.id}
-              variant="ghost"
+              variant={isActive ? "default" : "ghost"}
               size="sm"
               onClick={() => onTabChange(tab.id)}
-              className={`flex flex-col gap-1 h-auto py-2 px-1 transition-all duration-300 rounded-lg ${
+              className={`flex flex-col gap-1 h-auto py-2 px-1 ${
                 isActive 
-                  ? 'bg-secondary text-primary shadow-glow-primary scale-105'
+                  ? 'bg-primary text-primary-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4" />
               <span className="text-xs font-normal">{tab.label}</span>
             </Button>
           );

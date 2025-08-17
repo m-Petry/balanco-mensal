@@ -56,12 +56,12 @@ const UnifiedCharts = ({
     {
       name: 'Receitas',
       value: totalIncome,
-      fill: 'hsl(var(--chart-income))'
+      fill: 'hsl(142, 76%, 36%)'
     },
     {
       name: 'Despesas',
       value: totalExpense,
-      fill: 'hsl(var(--chart-expense))'
+      fill: 'hsl(0, 84%, 60%)'
     }
   ];
 
@@ -242,12 +242,12 @@ const UnifiedCharts = ({
                     >
                       <defs>
                         <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--chart-income))" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="hsl(var(--chart-income))" stopOpacity={0.2} />
+                          <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.2} />
                         </linearGradient>
                         <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--chart-expense))" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="hsl(var(--chart-expense))" stopOpacity={0.2} />
+                          <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.2} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -415,8 +415,8 @@ const UnifiedCharts = ({
                   <ComposedChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <defs>
                       <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-income))" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="hsl(var(--chart-income))" stopOpacity={0.1} />
+                        <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.1} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -444,7 +444,7 @@ const UnifiedCharts = ({
 
                     <ReferenceLine
                       y={dailyAverage}
-                      stroke="hsl(var(--chart-3))"
+                      stroke="hsl(217, 91%, 60%)"
                       strokeDasharray="5 5"
                       strokeWidth={1}
                     />
@@ -453,7 +453,7 @@ const UnifiedCharts = ({
                       name="Gastos Reais"
                       type="monotone"
                       dataKey="actual"
-                      stroke="hsl(var(--chart-income))"
+                      stroke="hsl(142, 76%, 36%)"
                       fill="url(#actualGradient)"
                       strokeWidth={2}
                       connectNulls={false}
@@ -462,10 +462,10 @@ const UnifiedCharts = ({
                       name="Projeção"
                       type="monotone"
                       dataKey="projected"
-                      stroke="hsl(var(--chart-2))"
+                      stroke="hsl(45, 93%, 47%)"
                       strokeWidth={2}
                       strokeDasharray="5 5"
-                      dot={{ fill: "hsl(var(--chart-2))", r: 3 }}
+                      dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
                       connectNulls={false}
                     />
                   </ComposedChart>
@@ -513,8 +513,8 @@ const UnifiedCharts = ({
                       name="Receitas"
                       type="monotone"
                       dataKey="receitas"
-                      stroke="hsl(var(--chart-income))"
-                      fill="hsl(var(--chart-income))"
+                      stroke="hsl(142, 76%, 36%)"
+                      fill="hsl(142, 76%, 36%)"
                       fillOpacity={0.3}
                       strokeWidth={2}
                     />
@@ -522,8 +522,8 @@ const UnifiedCharts = ({
                       name="Despesas"
                       type="monotone"
                       dataKey="despesas"
-                      stroke="hsl(var(--chart-expense))"
-                      fill="hsl(var(--chart-expense))"
+                      stroke="hsl(0, 84%, 60%)"
+                      fill="hsl(0, 84%, 60%)"
                       fillOpacity={0.3}
                       strokeWidth={2}
                     />
@@ -531,8 +531,8 @@ const UnifiedCharts = ({
                       name="Saldo"
                       type="monotone"
                       dataKey="saldo"
-                      stroke="hsl(var(--chart-3))"
-                      fill="hsl(var(--chart-3))"
+                      stroke="hsl(217, 91%, 60%)"
+                      fill="hsl(217, 91%, 60%)"
                       fillOpacity={0.2}
                       strokeWidth={2}
                     />

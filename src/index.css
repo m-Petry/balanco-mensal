@@ -85,77 +85,69 @@
   }
 
   .dark {
-    /* New dark theme - Inspired by modern fintech */
-    --background: 224 71% 4%; /* Deep, dark navy blue */
-    --foreground: 210 40% 96%; /* Light, clean text */
+    /* Dark theme - Twitter-like blue-grey */
+    --background: 213 24% 10%;
+    --foreground: 210 30% 98%;
 
-    --card: 224 71% 6%; /* Slightly lighter card background */
-    --card-foreground: 210 40% 96%;
+    --card: 213 22% 12%;
+    --card-foreground: 210 30% 98%;
 
-    --popover: 224 71% 8%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 213 22% 12%;
+    --popover-foreground: 210 30% 98%;
 
-    /* Primary - Bright cyan for accents */
-    --primary: 180 90% 50%;
-    --primary-foreground: 224 71% 4%;
+    /* Primary - Bright teal for dark mode */
+    --primary: 174 60% 60%;
+    --primary-foreground: 213 24% 10%;
 
-    /* Secondary - Muted blue-gray */
-    --secondary: 215 28% 15%;
-    --secondary-foreground: 210 40% 96%;
+    /* Secondary - Blue-gray */
+    --secondary: 213 18% 18%;
+    --secondary-foreground: 210 25% 90%;
 
-    /* Muted tones */
-    --muted: 215 28% 10%;
-    --muted-foreground: 215 20% 65%;
+    /* Muted tones for dark */
+    --muted: 213 16% 16%;
+    --muted-foreground: 210 20% 80%;
 
-    /* Accent - Will be used for gradients, etc. */
-    --accent: 180 90% 50%;
-    --accent-foreground: 224 71% 4%;
+    /* Accent - Softer gold for dark mode */
+    --accent: 45 75% 65%;
+    --accent-foreground: 213 24% 10%;
 
-    /* Status colors */
-    --success: 140 80% 60%;
-    --success-foreground: 224 71% 4%;
+    /* Status colors - adjusted for dark */
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
     
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 100%;
 
-    --warning: 45 90% 60%;
-    --warning-foreground: 224 71% 4%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
 
-    /* Borders and inputs */
-    --border: 215 28% 11%;
-    --input: 215 28% 13%;
-    --ring: 180 90% 60%;
+    /* Borders and inputs for dark */
+    --border: 213 18% 22%;
+    --input: 213 18% 18%;
+    --ring: 174 60% 60%;
 
-    /* Gradient colors from inspiration */
-    --gradient-from: 130 80% 60%; /* Lime Green */
-    --gradient-to: 80 70% 65%;   /* Yellow-Green */
-    --gradient-text: 180 100% 25%; /* Dark cyan text for on-gradient */
-
-    /* Chart colors for new dark mode */
-    --chart-income: 140 80% 60%;
-    --chart-expense: 0 72% 51%;
-    --chart-1: 180 90% 50%;
-    --chart-2: 80 70% 65%;
+    /* Chart colors for dark mode */
+    --chart-income: 142 76% 45%;
+    --chart-expense: 0 84% 65%;
+    --chart-1: 174 60% 60%;
+    --chart-2: 45 75% 65%;
     --chart-3: 262 83% 68%;
     --chart-4: 346 77% 59%;
-    --chart-5: 45 90% 60%;
+    --chart-5: 221 83% 63%;
 
-    /* Finance specific for new dark */
-    --income: 140 80% 60%;
-    --expense: 0 72% 51%;
-    --balance-positive: 140 80% 60%;
-    --balance-negative: 0 72% 51%;
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 224 71% 5%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 180 90% 50%;
-    --sidebar-primary-foreground: 224 71% 4%;
-    --sidebar-accent: 215 28% 15%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 215 28% 11%;
-    --sidebar-ring: 180 90% 60%;
+    /* Finance specific for dark */
+    --income: 142 76% 45%;
+    --expense: 0 84% 65%;
+    --balance-positive: 142 76% 45%;
+    --balance-negative: 0 84% 65%;
+    --sidebar-background: 213 22% 12%;
+    --sidebar-foreground: 210 30% 98%;
+    --sidebar-primary: 174 60% 60%;
+    --sidebar-primary-foreground: 213 24% 10%;
+    --sidebar-accent: 213 18% 18%;
+    --sidebar-accent-foreground: 210 30% 98%;
+    --sidebar-border: 213 18% 22%;
+    --sidebar-ring: 174 60% 60%;
   }
 }
 
