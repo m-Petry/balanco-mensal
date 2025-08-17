@@ -528,15 +528,15 @@ const TransactionsList = ({
               ))}
             </div>
 
-            {/* Controles de expansão modernos */}
+            {/* Controles de expansão minimalistas */}
             {(hasMore || showAll) && (
               <div className="mt-auto">
                 {/* Gradient fade effect */}
                 {hasMore && !showAll && (
-                  <div className="h-8 bg-gradient-to-t from-card to-transparent -mb-4 relative z-10" />
+                  <div className="h-6 bg-gradient-to-t from-card to-transparent -mb-2 relative z-10" />
                 )}
                 
-                <div className="flex justify-center pt-6 pb-4">
+                <div className="flex justify-center pt-4 pb-2">
                   {showAll ? (
                     <Button
                       variant="ghost"
@@ -544,23 +544,22 @@ const TransactionsList = ({
                       onClick={handleCollapse}
                       disabled={isAnimating}
                       className={cn(
-                        "group relative overflow-hidden rounded-full px-6 py-2",
-                        "bg-muted/50 hover:bg-muted border border-border/50",
-                        "transition-all duration-300 ease-out",
-                        "hover:shadow-md hover:scale-105",
+                        "group relative px-4 py-2 h-auto",
+                        "text-muted-foreground hover:text-foreground",
+                        "transition-all duration-200 ease-out",
+                        "hover:bg-muted/50",
                         "disabled:opacity-50 disabled:cursor-not-allowed"
                       )}
                     >
                       <div className="flex items-center gap-2">
                         <ChevronUp className={cn(
-                          "w-4 h-4 transition-transform duration-300",
-                          isAnimating && "rotate-180"
+                          "w-4 h-4 transition-transform duration-200",
+                          isAnimating && "animate-spin"
                         )} />
-                        <span className="font-medium">
+                        <span className="text-sm font-medium">
                           {isAnimating ? "Recolhendo..." : "Recolher"}
                         </span>
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </Button>
                   ) : (
                     <Button
@@ -569,24 +568,22 @@ const TransactionsList = ({
                       onClick={handleShowAll}
                       disabled={isAnimating}
                       className={cn(
-                        "group relative overflow-hidden rounded-full px-6 py-2",
-                        "bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10",
-                        "border border-primary/20 hover:border-primary/30",
-                        "transition-all duration-300 ease-out",
-                        "hover:shadow-lg hover:shadow-primary/20 hover:scale-105",
+                        "group relative px-4 py-2 h-auto",
+                        "text-primary hover:text-primary/80",
+                        "transition-all duration-200 ease-out",
+                        "hover:bg-primary/5",
                         "disabled:opacity-50 disabled:cursor-not-allowed"
                       )}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-primary">
+                        <span className="text-sm font-medium">
                           {isAnimating ? "Carregando..." : `Ver todas (${sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)`}
                         </span>
                         <ChevronDown className={cn(
-                          "w-4 h-4 text-primary transition-transform duration-300",
-                          isAnimating && "rotate-180"
+                          "w-4 h-4 transition-transform duration-200",
+                          isAnimating && "animate-spin"
                         )} />
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </Button>
                   )}
                 </div>
