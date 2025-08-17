@@ -11,7 +11,8 @@ import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { ModernNavigation } from "@/components/ui/modern-navigation";
+import { Plus, Home, CreditCard, TrendingUp, Settings } from "lucide-react";
 
 const FinanceDashboard = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -174,13 +175,56 @@ const FinanceDashboard = () => {
           </div>
         </main>
 
-        {/* Mobile Navigation */}
-        <MobileNavigation
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
+        {/* Modern Mobile Navigation */}
+        <ModernNavigation
+          items={[
+            {
+              id: 'summary',
+              label: 'Resumo',
+              icon: <Home className="w-5 h-5" />,
+            },
+            {
+              id: 'transactions',
+              label: 'Transações',
+              icon: <CreditCard className="w-5 h-5" />,
+            },
+            {
+              id: 'charts',
+              label: 'Gráficos',
+              icon: <TrendingUp className="w-5 h-5" />,
+            },
+            {
+              id: 'settings',
+              label: 'Config',
+              icon: <Settings className="w-5 h-5" />,
+            },
+          ]}
+          activeItem={activeTab}
+          onItemClick={(item) => {
+            if (item.id === 'settings') {
+              // Toggle values visibility for settings
+              toggleValuesVisibility();
+            } else {
+              setActiveTab(item.id as 'summary' | 'transactions' | 'charts');
+            }
+          }}
+          variant="glass"
+          size="lg"
+          fab={{
+            icon: <Plus className="w-6 h-6" />,
+            onClick: () => {
+              // Trigger add transaction dialog
+              const addButton = document.querySelector('[data-add-transaction]');
+              if (addButton) {
+                (addButton as HTMLButtonElement).click();
+              }
+            },
+            label: 'Nova Transação',
+          }}
+          className="sm:hidden"
         />
 
-        {/* Floating Add Transaction Button */}
+        {/* Hidden Add Transaction Dialog Trigger */}
         <AddTransactionDialog
           categories={categories}
           onAddTransaction={addTransaction}
@@ -188,12 +232,12 @@ const FinanceDashboard = () => {
           onUpdateCategory={updateCategory}
           onDeleteCategory={deleteCategory}
           trigger={
-            <Button
-              size="icon"
-              className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg sm:hidden z-[60]"
+            <button
+              data-add-transaction
+              className="hidden"
             >
-              <Plus className="h-6 w-6" />
-            </Button>
+              Add Transaction
+            </button>
           }
         />
       </div>
