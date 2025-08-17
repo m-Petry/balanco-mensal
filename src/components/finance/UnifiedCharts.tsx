@@ -1,3 +1,4 @@
+import { useRef, useState, type MouseEvent } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, TrendingUp, PieChart as PieChartIcon, Target } from "lucide-react";
@@ -146,6 +147,19 @@ const UnifiedCharts = ({
     return `${((value / total) * 100).toFixed(1)}%`;
   };
 
+  const pieContainerRef = useRef<HTMLDivElement>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
+  const handlePieMouseMove = (_: unknown, __: number, e: MouseEvent<SVGElement>) => {
+    if (!pieContainerRef.current) return;
+    const rect = pieContainerRef.current.getBoundingClientRect();
+    setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const handlePieMouseLeave = () => {
+    setTooltipPos(null);
+  };
+
   const renderIncomeExpenseTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (!active || !payload?.length) return null;
     return (
@@ -164,23 +178,13 @@ const UnifiedCharts = ({
     );
   };
 
-  const renderCategoryTooltip = ({ active, payload, coordinate, viewBox }: TooltipProps<number, string> & { coordinate: { x: number; y: number }; viewBox: { cx: number; cy: number; outerRadius: number } }) => {
+  const renderCategoryTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (!active || !payload?.length) return null;
-    const { cx, cy, outerRadius } = viewBox;
-    const dx = coordinate.x - cx;
-    const dy = coordinate.y - cy;
-    const angle = Math.atan2(dy, dx);
-    const offset = 20;
-    const x = cx + Math.cos(angle) * (outerRadius + offset);
-    const y = cy + Math.sin(angle) * (outerRadius + offset);
 
     return (
       <div
         className="px-2 py-1 rounded border text-xs space-y-1 pointer-events-none"
         style={{
-          position: 'absolute',
-          left: x,
-          top: y,
           backgroundColor: 'hsl(var(--card))',
           borderColor: 'hsl(var(--border))',
           color: 'hsl(var(--foreground))',
@@ -306,7 +310,7 @@ const UnifiedCharts = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="relative h-[180px] w-full">
+                  <div className="relative h-[180px] w-full" ref={pieContainerRef}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -320,6 +324,8 @@ const UnifiedCharts = ({
                           cornerRadius={4}
                           dataKey="value"
                           labelLine={false}
+                          onMouseMove={handlePieMouseMove}
+                          onMouseLeave={handlePieMouseLeave}
                         >
                           {expensesByCategory.map((entry) => (
                             <Cell
@@ -330,7 +336,11 @@ const UnifiedCharts = ({
                             />
                           ))}
                         </Pie>
-                        <Tooltip content={renderCategoryTooltip} position={{ x: 0, y: 0 }} />
+                        <Tooltip
+                          content={renderCategoryTooltip}
+                          position={tooltipPos}
+                          wrapperStyle={{ pointerEvents: 'none', visibility: tooltipPos ? 'visible' : 'hidden' }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">
