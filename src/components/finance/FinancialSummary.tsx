@@ -16,6 +16,22 @@ const FinancialSummary = ({ monthlyData, valuesVisible }: FinancialSummaryProps)
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Balance */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+            <DollarSign className={`h-4 w-4 ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'}`} />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'} transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
+              {formatCurrency(balance)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {balance >= 0 ? 'Resultado positivo' : 'Resultado negativo'}
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Total Income */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -44,22 +60,6 @@ const FinancialSummary = ({ monthlyData, valuesVisible }: FinancialSummaryProps)
             </div>
             <p className="text-xs text-muted-foreground">
               Despesas do mês
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Balance */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
-            <DollarSign className={`h-4 w-4 ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'}`} />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${balance >= 0 ? 'text-balance-positive' : 'text-balance-negative'} transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
-              {formatCurrency(balance)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {balance >= 0 ? 'Resultado positivo' : 'Resultado negativo'}
             </p>
           </CardContent>
         </Card>
