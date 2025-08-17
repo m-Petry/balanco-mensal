@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, Eye, EyeOff } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -30,12 +30,13 @@ interface TransactionsListProps {
   onAddCategory?: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory?: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory?: (id: string) => void;
+  valuesVisible: boolean;
 }
 
-const TransactionsList = ({ 
-  transactions, 
-  categories, 
-  onUpdateTransaction, 
+const TransactionsList = ({
+  transactions,
+  categories,
+  onUpdateTransaction,
   onDeleteTransaction,
   previousBalance,
   showBalancePrompt,
@@ -44,7 +45,8 @@ const TransactionsList = ({
   currentDate,
   onAddCategory,
   onUpdateCategory,
-  onDeleteCategory
+  onDeleteCategory,
+  valuesVisible
 }: TransactionsListProps) => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [description, setDescription] = useState('');
@@ -56,8 +58,6 @@ const TransactionsList = ({
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const INITIAL_VISIBLE_COUNT = 6;
   const [showAll, setShowAll] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
-  const [valuesVisible, setValuesVisible] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -121,8 +121,8 @@ const TransactionsList = ({
   };
 
   const handleCategoryFilter = (categoryId: string) => {
-    setSelectedFilters(prev => 
-      prev.includes(categoryId) 
+    setSelectedFilters(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     );
@@ -136,7 +136,7 @@ const TransactionsList = ({
     setSelectedFilters([]);
   };
 
-  const filteredTransactions = selectedFilters.length > 0 
+  const filteredTransactions = selectedFilters.length > 0
     ? transactions.filter(t => selectedFilters.includes(t.categoryId))
     : transactions;
 
@@ -164,7 +164,6 @@ const TransactionsList = ({
 
   const handleCollapse = () => {
     setShowAll(false);
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
   };
 
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -177,17 +176,7 @@ const TransactionsList = ({
     <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="flex items-center justify-between">
-            <CardTitle>Transações do Mês</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setValuesVisible(!valuesVisible)}
-              className="h-8 w-8 p-0"
-            >
-              {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </Button>
-          </div>
+          <CardTitle>Transações do Mês</CardTitle>
           <Select
             value={sortOrder}
             onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}
@@ -218,8 +207,8 @@ const TransactionsList = ({
                   variant={selectedFilters.includes(category.id) ? "default" : "outline"}
                   className={cn(
                     "cursor-pointer transition-colors",
-                    selectedFilters.includes(category.id) 
-                      ? "bg-primary text-primary-foreground" 
+                    selectedFilters.includes(category.id)
+                      ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
                   )}
                   onClick={() => handleCategoryFilter(category.id)}
@@ -232,7 +221,7 @@ const TransactionsList = ({
                 </Badge>
               ))}
             </div>
-            
+
             {/* Selected Filters Display */}
             {selectedFilters.length > 0 && (
               <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
@@ -283,14 +272,14 @@ const TransactionsList = ({
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Saldo {previousBalance >= 0 ? 'positivo' : 'negativo'} de{' '}
-                    <span className={`font-bold ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-bold ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
                       R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`font-bold text-lg ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`font-bold text-lg ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
                   {previousBalance >= 0 ? '+' : '-'} R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
                 </span>
                 <div className="flex gap-1">
@@ -385,7 +374,7 @@ const TransactionsList = ({
                           <DialogHeader>
                             <DialogTitle>Editar Transação</DialogTitle>
                           </DialogHeader>
-                          
+
                           <div className="space-y-6">
                             <div className="space-y-3">
                               <Label>Tipo</Label>
@@ -446,8 +435,8 @@ const TransactionsList = ({
                                    {filteredCategories.map((category) => (
                                      <SelectItem key={category.id} value={category.id}>
                                        <div className="flex items-center gap-2">
-                                         <div 
-                                           className="w-3 h-3 rounded-full" 
+                                         <div
+                                           className="w-3 h-3 rounded-full"
                                            style={{ backgroundColor: category.color }}
                                          />
                                          {category.name}
@@ -486,9 +475,9 @@ const TransactionsList = ({
                             </div>
 
                             <div className="flex gap-3">
-                              <Button 
-                                type="button" 
-                                variant="outline" 
+                              <Button
+                                type="button"
+                                variant="outline"
                                 onClick={() => setEditingTransaction(null)}
                                 className="flex-1"
                               >
@@ -501,7 +490,7 @@ const TransactionsList = ({
                           </div>
                         </DialogContent>
                       </Dialog>
-                      
+
                       <Button
                         variant="ghost"
                         size="icon"

@@ -113,6 +113,7 @@ const FinanceDashboard = () => {
                 onAddCategory={addCategory}
                 onUpdateCategory={updateCategory}
                 onDeleteCategory={deleteCategory}
+                valuesVisible={valuesVisible}
               />
               
               {/* Right Column - Unified Charts */}
@@ -123,6 +124,7 @@ const FinanceDashboard = () => {
                 totalExpense={currentMonthData.totalExpense}
                 allTransactions={allTransactions}
                 currentDate={currentDate}
+                valuesVisible={valuesVisible}
               />
             </div>
           </div>
@@ -151,6 +153,7 @@ const FinanceDashboard = () => {
                   onAddCategory={addCategory}
                   onUpdateCategory={updateCategory}
                   onDeleteCategory={deleteCategory}
+                  valuesVisible={valuesVisible}
                 />
               </div>
             )}
@@ -164,6 +167,7 @@ const FinanceDashboard = () => {
                   totalExpense={currentMonthData.totalExpense}
                   allTransactions={allTransactions}
                   currentDate={currentDate}
+                  valuesVisible={valuesVisible}
                 />
               </div>
             )}
