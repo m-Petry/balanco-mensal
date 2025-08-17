@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/utils/currency';
 import { CategoryManagementDialog } from './CategoryManagementDialog';
-import { PreviousBalancePrompt } from './PreviousBalancePrompt';
+import PreviousBalancePrompt from './PreviousBalancePrompt';
 import { useSpring, animated, useTrail, config, useTransition } from '@react-spring/web';
 
 interface TransactionsListProps {
