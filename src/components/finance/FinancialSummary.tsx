@@ -1,52 +1,20 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, DollarSign, Eye, EyeOff } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { MonthlyData } from "@/types/finance";
 import { formatCurrency } from "@/utils/currency";
 
 interface FinancialSummaryProps {
   monthlyData: MonthlyData;
+  valuesVisible: boolean;
 }
 
-const FinancialSummary = ({ monthlyData }: FinancialSummaryProps) => {
+const FinancialSummary = ({ monthlyData, valuesVisible }: FinancialSummaryProps) => {
   const { totalIncome, totalExpense, balance } = monthlyData;
-  const [valuesVisible, setValuesVisible] = useState(false);
   
   const spentPercentage = totalIncome > 0 ? (totalExpense / totalIncome) * 100 : 0;
-  const savingsPercentage = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
-
-  // Auto-hide values after 5 minutes
-  useEffect(() => {
-    if (valuesVisible) {
-      const timer = setTimeout(() => {
-        setValuesVisible(false);
-      }, 5 * 60 * 1000); // 5 minutes
-
-      return () => clearTimeout(timer);
-    }
-  }, [valuesVisible]);
-
-  const toggleValuesVisibility = () => {
-    setValuesVisible(!valuesVisible);
-  };
-
 
   return (
     <div className="space-y-4">
-      {/* Toggle Button */}
-      <div className="flex justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleValuesVisibility}
-          className="gap-2"
-        >
-          {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          {valuesVisible ? 'Ocultar valores' : 'Mostrar valores'}
-        </Button>
-      </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Income */}
         <Card>

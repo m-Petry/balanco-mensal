@@ -164,6 +164,35 @@ const UnifiedCharts = ({
     );
   };
 
+  const renderCategoryTooltip = ({ active, payload, coordinate, viewBox }: TooltipProps<number, string> & { coordinate: { x: number; y: number }; viewBox: { cx: number; cy: number; outerRadius: number } }) => {
+    if (!active || !payload?.length) return null;
+    const { cx, cy, outerRadius } = viewBox;
+    const dx = coordinate.x - cx;
+    const dy = coordinate.y - cy;
+    const angle = Math.atan2(dy, dx);
+    const offset = 20;
+    const x = cx + Math.cos(angle) * (outerRadius + offset);
+    const y = cy + Math.sin(angle) * (outerRadius + offset);
+
+    return (
+      <div
+        className="px-2 py-1 rounded border text-xs space-y-1 pointer-events-none"
+        style={{
+          position: 'absolute',
+          left: x,
+          top: y,
+          backgroundColor: 'hsl(var(--card))',
+          borderColor: 'hsl(var(--border))',
+          color: 'hsl(var(--foreground))',
+          filter: valuesVisible ? 'none' : 'blur(4px)',
+        }}
+      >
+        <div>{payload[0].name}</div>
+        <div>{formatPercentage(Number(payload[0].value), totalExpense)}</div>
+      </div>
+    );
+  };
+
   const sixMonthData = generateSixMonthTrend();
   const { dailyData, dailyAverage, projectedTotal } = generateDailyProjection();
 
@@ -301,21 +330,7 @@ const UnifiedCharts = ({
                             />
                           ))}
                         </Pie>
-                        <Tooltip
-                          formatter={(value: number, _name, props) => [
-                            formatPercentage(Number(value), totalExpense),
-                            props?.payload?.name,
-                          ]}
-                          wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
-                          contentStyle={{
-                            backgroundColor: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                          }}
-                          itemStyle={{ color: 'hsl(var(--foreground))' }}
-                          labelStyle={{ color: 'hsl(var(--foreground))' }}
-                        />
+                        <Tooltip content={renderCategoryTooltip} position={{ x: 0, y: 0 }} />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">

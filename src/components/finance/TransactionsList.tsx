@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, Eye, EyeOff, Settings } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, Eye, EyeOff } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -176,9 +176,9 @@ const TransactionsList = ({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Transações do Mês</CardTitle>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="flex items-center justify-between">
+            <CardTitle>Transações do Mês</CardTitle>
             <Button
               variant="outline"
               size="sm"
@@ -187,19 +187,22 @@ const TransactionsList = ({
             >
               {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </Button>
-            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}>
-              <SelectTrigger className="w-[180px] h-8">
-                <ArrowUpDown className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Mais recentes</SelectItem>
-                <SelectItem value="oldest">Mais antigos</SelectItem>
-                <SelectItem value="highest">Maior valor</SelectItem>
-                <SelectItem value="lowest">Menor valor</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
+          <Select
+            value={sortOrder}
+            onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-8">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Mais recentes</SelectItem>
+              <SelectItem value="oldest">Mais antigos</SelectItem>
+              <SelectItem value="highest">Maior valor</SelectItem>
+              <SelectItem value="lowest">Menor valor</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
 
@@ -332,10 +335,10 @@ const TransactionsList = ({
               {visibleTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="p-4 border rounded-lg hover:bg-muted/50 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div 
+                  <div className="flex items-center gap-3 flex-1 w-full">
+                    <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
                     />
@@ -344,13 +347,9 @@ const TransactionsList = ({
                         <span className="font-medium">{transaction.description}</span>
                         <Badge
                           variant="outline"
-                          className={cn(
-                            "cursor-pointer transition-colors",
-                            transaction.type === 'income'
-                              ? 'text-income border-income/50 bg-income/10 hover:bg-income/20'
-                              : 'text-expense border-expense/50 bg-expense/10 hover:bg-expense/20'
-                          )}
+                          className="cursor-pointer transition-colors"
                           onClick={() => handleCategoryFilter(transaction.categoryId)}
+                          style={{ borderColor: getCategoryColor(transaction.categoryId) }}
                         >
                           {getCategoryName(transaction.categoryId)}
                         </Badge>
@@ -360,16 +359,16 @@ const TransactionsList = ({
                       </div>
                     </div>
                   </div>
-                  
-                   <div className="flex items-center gap-3">
-                     <span 
-                       className={`font-semibold transition-all duration-300 ${
-                         transaction.type === 'income' ? 'text-income' : 'text-expense'
-                       } ${!valuesVisible ? 'blur-md select-none' : ''}`}
-                     >
-                       {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
-                     </span>
-                    
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                    <span
+                      className={`font-semibold transition-all duration-300 ${
+                        transaction.type === 'income' ? 'text-income' : 'text-expense'
+                      } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                    </span>
+
                     <div className="flex gap-1">
                       <Dialog>
                         <DialogTrigger asChild>
