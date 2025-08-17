@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, Eye, EyeOff, Settings } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -30,12 +30,13 @@ interface TransactionsListProps {
   onAddCategory?: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory?: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory?: (id: string) => void;
+  valuesVisible: boolean;
 }
 
-const TransactionsList = ({ 
-  transactions, 
-  categories, 
-  onUpdateTransaction, 
+const TransactionsList = ({
+  transactions,
+  categories,
+  onUpdateTransaction,
   onDeleteTransaction,
   previousBalance,
   showBalancePrompt,
@@ -44,7 +45,8 @@ const TransactionsList = ({
   currentDate,
   onAddCategory,
   onUpdateCategory,
-  onDeleteCategory
+  onDeleteCategory,
+  valuesVisible
 }: TransactionsListProps) => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [description, setDescription] = useState('');
@@ -56,8 +58,6 @@ const TransactionsList = ({
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const INITIAL_VISIBLE_COUNT = 6;
   const [showAll, setShowAll] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
-  const [valuesVisible, setValuesVisible] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -164,7 +164,6 @@ const TransactionsList = ({
 
   const handleCollapse = () => {
     setShowAll(false);
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
   };
 
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -176,30 +175,23 @@ const TransactionsList = ({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle>Transações do Mês</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setValuesVisible(!valuesVisible)}
-              className="h-8 w-8 p-0"
-            >
-              {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </Button>
-            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}>
-              <SelectTrigger className="w-[180px] h-8">
-                <ArrowUpDown className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Mais recentes</SelectItem>
-                <SelectItem value="oldest">Mais antigos</SelectItem>
-                <SelectItem value="highest">Maior valor</SelectItem>
-                <SelectItem value="lowest">Menor valor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select
+            value={sortOrder}
+            onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-8">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Mais recentes</SelectItem>
+              <SelectItem value="oldest">Mais antigos</SelectItem>
+              <SelectItem value="highest">Maior valor</SelectItem>
+              <SelectItem value="lowest">Menor valor</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
 
@@ -280,14 +272,14 @@ const TransactionsList = ({
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Saldo {previousBalance >= 0 ? 'positivo' : 'negativo'} de{' '}
-                    <span className={`font-bold ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-bold ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
                       R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`font-bold text-lg ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`font-bold text-lg ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
                   {previousBalance >= 0 ? '+' : '-'} R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
                 </span>
                 <div className="flex gap-1">
@@ -332,10 +324,10 @@ const TransactionsList = ({
               {visibleTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="p-4 border rounded-lg hover:bg-muted/50 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div 
+                  <div className="flex items-center gap-3 flex-1 w-full">
+                    <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
                     />
@@ -344,13 +336,9 @@ const TransactionsList = ({
                         <span className="font-medium">{transaction.description}</span>
                         <Badge
                           variant="outline"
-                          className={cn(
-                            "cursor-pointer transition-colors",
-                            transaction.type === 'income'
-                              ? 'text-income border-income/50 bg-income/10 hover:bg-income/20'
-                              : 'text-expense border-expense/50 bg-expense/10 hover:bg-expense/20'
-                          )}
+                          className="cursor-pointer transition-colors"
                           onClick={() => handleCategoryFilter(transaction.categoryId)}
+                          style={{ borderColor: getCategoryColor(transaction.categoryId) }}
                         >
                           {getCategoryName(transaction.categoryId)}
                         </Badge>
@@ -360,16 +348,16 @@ const TransactionsList = ({
                       </div>
                     </div>
                   </div>
-                  
-                   <div className="flex items-center gap-3">
-                     <span 
-                       className={`font-semibold transition-all duration-300 ${
-                         transaction.type === 'income' ? 'text-income' : 'text-expense'
-                       } ${!valuesVisible ? 'blur-md select-none' : ''}`}
-                     >
-                       {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
-                     </span>
-                    
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                    <span
+                      className={`font-semibold transition-all duration-300 ${
+                        transaction.type === 'income' ? 'text-income' : 'text-expense'
+                      } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                    </span>
+
                     <div className="flex gap-1">
                       <Dialog>
                         <DialogTrigger asChild>

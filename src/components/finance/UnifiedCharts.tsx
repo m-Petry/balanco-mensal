@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, TrendingUp, PieChart as PieChartIcon, Target } from "lucide-react";
@@ -34,20 +35,21 @@ interface UnifiedChartsProps {
   totalExpense: number;
   allTransactions: Transaction[];
   currentDate: Date | { year: number; month: number };
+  valuesVisible: boolean;
 }
 
 const UnifiedCharts = ({
   transactions, 
   categories, 
-  totalIncome, 
+  totalIncome,
   totalExpense,
   allTransactions,
-  currentDate
+  currentDate,
+  valuesVisible
 }: UnifiedChartsProps) => {
   // Convert currentDate to Date object if needed
   const dateObj = currentDate instanceof Date ? currentDate : new Date(currentDate.year, currentDate.month - 1);
 
-  const valuesVisible = true;
 
   // Income vs Expense chart data
   const incomeExpenseData = [
@@ -164,6 +166,46 @@ const UnifiedCharts = ({
     );
   };
 
+  const renderCategoryTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div
+        className="px-2 py-1 rounded border text-xs space-y-1 pointer-events-none"
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          borderColor: 'hsl(var(--border))',
+          color: 'hsl(var(--foreground))',
+          filter: valuesVisible ? 'none' : 'blur(4px)',
+        }}
+      >
+        <div>{payload[0].name}</div>
+        <div>{formatPercentage(Number(payload[0].value), totalExpense)}</div>
+      </div>
+    );
+  };
+
+  const pieContainerRef = useRef<HTMLDivElement>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>();
+
+  const handlePieMouseMove = (_: unknown, __: number, e: { chartX: number; chartY: number }) => {
+    if (!pieContainerRef.current) return;
+    const rect = pieContainerRef.current.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const outerRadius = 80;
+    const dx = e.chartX - cx;
+    const dy = e.chartY - cy;
+    const angle = Math.atan2(dy, dx);
+    const offset = 12;
+    const x = cx + Math.cos(angle) * (outerRadius + offset);
+    const y = cy + Math.sin(angle) * (outerRadius + offset);
+    setTooltipPos({ x, y });
+  };
+
+  const handlePieMouseLeave = () => {
+    setTooltipPos(undefined);
+  };
+
   const sixMonthData = generateSixMonthTrend();
   const { dailyData, dailyAverage, projectedTotal } = generateDailyProjection();
 
@@ -277,7 +319,7 @@ const UnifiedCharts = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="relative h-[180px] w-full">
+                  <div className="relative h-[180px] w-full" ref={pieContainerRef}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -287,10 +329,12 @@ const UnifiedCharts = ({
                           cy="50%"
                           innerRadius={50}
                           outerRadius={80}
-                          paddingAngle={4}
+                          paddingAngle={2}
                           cornerRadius={4}
                           dataKey="value"
                           labelLine={false}
+                          onMouseMove={handlePieMouseMove}
+                          onMouseLeave={handlePieMouseLeave}
                         >
                           {expensesByCategory.map((entry) => (
                             <Cell
@@ -302,19 +346,9 @@ const UnifiedCharts = ({
                           ))}
                         </Pie>
                         <Tooltip
-                          formatter={(value: number, _name, props) => [
-                            formatPercentage(Number(value), totalExpense),
-                            props?.payload?.name,
-                          ]}
-                          wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
-                          contentStyle={{
-                            backgroundColor: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                          }}
-                          itemStyle={{ color: 'hsl(var(--foreground))' }}
-                          labelStyle={{ color: 'hsl(var(--foreground))' }}
+                          content={renderCategoryTooltip}
+                          position={tooltipPos}
+                          wrapperStyle={{ pointerEvents: 'none', visibility: tooltipPos ? 'visible' : 'hidden' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>

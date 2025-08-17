@@ -1,10 +1,9 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock, Eye, EyeOff } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -22,6 +21,8 @@ interface HeaderProps {
   onUpdateCategory: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory: (id: string) => void;
   onLock?: () => void;
+  valuesVisible: boolean;
+  onToggleValues: () => void;
 }
 
 const Header = ({ 
@@ -33,7 +34,9 @@ const Header = ({
   onAddCategory,
   onUpdateCategory,
   onDeleteCategory,
-  onLock
+  onLock,
+  valuesVisible,
+  onToggleValues
 }: HeaderProps) => {
   const currentDateObj = new Date(currentDate.year, currentDate.month - 1);
   const monthName = format(currentDateObj, "MMMM yyyy", { locale: ptBR });
@@ -65,6 +68,19 @@ const Header = ({
               <h1 className="text-base font-semibold text-foreground">Finanças</h1>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={onToggleValues}
+                className="h-7 w-7"
+                title={valuesVisible ? "Ocultar valores" : "Mostrar valores"}
+              >
+                {valuesVisible ? (
+                  <EyeOff className="w-3.5 h-3.5" />
+                ) : (
+                  <Eye className="w-3.5 h-3.5" />
+                )}
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
@@ -191,7 +207,7 @@ const Header = ({
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <AddTransactionDialog 
+            <AddTransactionDialog
               categories={categories}
               onAddTransaction={onAddTransaction}
               onAddCategory={onAddCategory}
@@ -204,6 +220,15 @@ const Header = ({
               onUpdateCategory={onUpdateCategory}
               onDeleteCategory={onDeleteCategory}
             />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onToggleValues}
+              className="h-9 w-9"
+              title={valuesVisible ? "Ocultar valores" : "Mostrar valores"}
+            >
+              {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
             <Button
               variant="outline"
               size="icon"
