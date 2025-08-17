@@ -320,6 +320,8 @@ const UnifiedCharts = ({
                         <span className="font-medium">{activeSlice.name}</span>: {formatPercentage(activeSlice.value, totalExpense)}
                       </div>
                     )}
+                      </PieChart>
+                    </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">
                       <span className="text-muted-foreground">Total</span>
                       <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
