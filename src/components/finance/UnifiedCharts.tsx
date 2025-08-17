@@ -289,14 +289,16 @@ const UnifiedCharts = ({
                           ))}
                         </Pie>
                         <Tooltip
-                          formatter={(value: number) => [formatCurrency(value), '']}
-                          labelFormatter={(label) => label}
+                          formatter={(value: number, _name, props) => [
+                            formatPercentage(Number(value), totalExpense),
+                            props?.payload?.name,
+                          ]}
                           wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
                             border: '1px solid hsl(var(--border))',
                             borderRadius: '6px',
-                            fontSize: '12px'
+                            fontSize: '12px',
                           }}
                         />
                       </PieChart>
