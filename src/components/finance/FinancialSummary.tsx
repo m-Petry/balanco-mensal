@@ -67,7 +67,7 @@ const FinancialSummary = ({ monthlyData, valuesVisible }: FinancialSummaryProps)
         {/* Spending Percentage */}
         <Card className="bg-accent/10">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">% da Renda Total Mensal</CardTitle>
+            <CardTitle className="text-sm font-medium">% da Renda Mensal Gasta</CardTitle>
             <div className="text-accent font-bold text-lg">
               {spentPercentage.toFixed(0)}%
             </div>
