@@ -1,21 +1,25 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Trash2, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
+import { Transaction, Category } from "@/types/finance";
+import { formatCurrency } from "@/utils/currency";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { motion, AnimatePresence } from "framer-motion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, ChevronUp, ChevronDown } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { CalendarIcon, Edit2, X, Check, TrendingUp, TrendingDown } from "lucide-react";
+import { parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Transaction, Category } from "@/types/finance";
-import { useToast } from "@/hooks/use-toast";
 import CategoryManagementDialog from "./CategoryManagementDialog";
+
 
 interface TransactionsListProps {
   transactions: Transaction[];
@@ -181,6 +185,23 @@ const TransactionsList = ({
     .map(categoryId => categories.find(cat => cat.id === categoryId))
     .filter(Boolean) as Category[];
 
+  // Animation variants for list items
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: "spring", damping: 12, stiffness: 100 } },
+    exit: { opacity: 0, y: -20 }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -204,9 +225,7 @@ const TransactionsList = ({
         </div>
       </CardHeader>
 
-      {/* CardContent vira coluna flex e ocupa todo o espaço disponível; removemos o padding inferior */}
       <CardContent className="flex flex-col flex-1 pb-0">
-        {/* Filter Tags */}
         {uniqueCategories.length > 0 && (
           <div className="mb-6">
             <div className="flex flex-wrap gap-2 mb-3">
@@ -231,7 +250,6 @@ const TransactionsList = ({
               ))}
             </div>
 
-            {/* Selected Filters Display */}
             {selectedFilters.length > 0 && (
               <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm text-muted-foreground">Filtros ativos:</span>
@@ -262,7 +280,6 @@ const TransactionsList = ({
           </div>
         )}
 
-        {/* Previous Balance Transfer Prompt */}
         {showBalancePrompt && previousBalance !== null && onAcceptBalance && onRejectBalance && (
           <div className="border rounded-lg p-4 bg-primary/5 border-primary/20 mb-3">
             <div className="flex items-center justify-between gap-4">
@@ -328,265 +345,224 @@ const TransactionsList = ({
           </p>
         ) : (
           <>
-            {/* Lista ocupa o espaço e empurra os controles para baixo */}
-            <div className={cn(
-              "space-y-3 flex-1 transition-all duration-300 ease-in-out",
-              isAnimating && "opacity-75 scale-[0.99]"
-            )}>
-              {visibleTransactions.map((transaction, index) => (
-                <div
-                  key={transaction.id}
-                  className={cn(
-                    "p-4 border rounded-lg hover:bg-muted/50 transition-all duration-200 ease-out",
-                    "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
-                    "hover:shadow-sm hover:border-primary/20",
-                    !showAll && index >= INITIAL_VISIBLE_COUNT ? 
-                      "animate-in fade-in-0 slide-in-from-top-2 duration-300" : 
-                      "animate-in fade-in-0 duration-200"
-                  )}
-                  style={{
-                    animationDelay: !showAll && index >= INITIAL_VISIBLE_COUNT ? 
-                      `${(index - INITIAL_VISIBLE_COUNT) * 50}ms` : '0ms'
-                  }}
-                >
-                  <div className="flex items-center gap-3 flex-1 w-full">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-3"
+            >
+              <AnimatePresence initial={false}>
+                {visibleTransactions.map((transaction, index) => (
+                  <motion.div
+                    key={transaction.id}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    layout
+                    className="relative"
+                  >
                     <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{transaction.description}</span>
-                        <Badge
-                          variant="outline"
-                          className="cursor-pointer transition-colors"
-                          onClick={() => handleCategoryFilter(transaction.categoryId)}
-                          style={{ borderColor: getCategoryColor(transaction.categoryId) }}
-                        >
-                          {getCategoryName(transaction.categoryId)}
-                        </Badge>
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {format(parseISO(transaction.date), "dd 'de' MMMM", { locale: ptBR })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                    <span
-                      className={`font-semibold transition-all duration-300 ${
-                        transaction.type === 'income' ? 'text-income' : 'text-expense'
-                      } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                      className={cn(
+                        "p-4 border rounded-lg bg-card hover:shadow-md transition-all duration-200 cursor-pointer",
+                        "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                      )}
+                      onClick={() => {
+                        setEditingTransaction(transaction);
+                        setDescription(transaction.description);
+                        setAmount(transaction.amount.toString());
+                        setType(transaction.type);
+                        setCategoryId(transaction.categoryId);
+                        setDate(parseISO(transaction.date));
+                      }}
                     >
-                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
-                    </span>
+                      <div className="flex items-center gap-3 flex-1 w-full">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm truncate">{transaction.description}</span>
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={`font-semibold text-sm ${
+                                  transaction.type === 'income' ? 'text-income' : 'text-expense'
+                                } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                              >
+                                {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                              </span>
+                              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
-                    <div className="flex gap-1">
-                      <Dialog>
-                        <DialogTrigger asChild>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                        <div className="flex gap-1">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleEdit(transaction)}
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Editar Transação</DialogTitle>
+                              </DialogHeader>
+
+                              <div className="space-y-6">
+                                <div className="space-y-3">
+                                  <Label>Tipo</Label>
+                                  <RadioGroup value={type} onValueChange={(value: 'income' | 'expense') => {
+                                    setType(value);
+                                    setCategoryId('');
+                                  }}>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="income" id="edit-income" />
+                                      <Label htmlFor="edit-income" className="text-income font-medium">Receita</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="expense" id="edit-expense" />
+                                      <Label htmlFor="edit-expense" className="text-expense font-medium">Despesa</Label>
+                                    </div>
+                                  </RadioGroup>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="edit-description">Descrição</Label>
+                                  <Input
+                                    id="edit-description"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="edit-amount">Valor</Label>
+                                  <Input
+                                    id="edit-amount"
+                                    type="text"
+                                    value={amount}
+                                    onChange={(e) => {
+                                      const value = e.target.value.replace(/[^0-9.,]/g, '');
+                                      setAmount(value);
+                                    }}
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <Label>Categoria</Label>
+                                    {onAddCategory && onUpdateCategory && onDeleteCategory && (
+                                      <CategoryManagementDialog
+                                        categories={categories}
+                                        onAddCategory={onAddCategory}
+                                        onUpdateCategory={onUpdateCategory}
+                                        onDeleteCategory={onDeleteCategory}
+                                      />
+                                    )}
+                                  </div>
+                                  <Select value={categoryId} onValueChange={setCategoryId}>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {filteredCategories.map((category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                          <div className="flex items-center gap-2">
+                                            <div
+                                              className="w-3 h-3 rounded-full"
+                                              style={{ backgroundColor: category.color }}
+                                            />
+                                            {category.name}
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Data</Label>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        className={cn(
+                                          "w-full justify-start text-left font-normal",
+                                          !date && "text-muted-foreground"
+                                        )}
+                                      >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
+                                        initialFocus
+                                        className="pointer-events-auto"
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+
+                                <div className="flex gap-3">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setEditingTransaction(null)}
+                                    className="flex-1"
+                                  >
+                                    Cancelar
+                                  </Button>
+                                  <Button onClick={handleUpdate} className="flex-1">
+                                    Salvar
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleEdit(transaction)}
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(transaction.id)}
                           >
-                            <Edit2 className="w-3 h-3" />
+                            <Trash2 className="w-3 h-3" />
                           </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>Editar Transação</DialogTitle>
-                          </DialogHeader>
-
-                          <div className="space-y-6">
-                            <div className="space-y-3">
-                              <Label>Tipo</Label>
-                              <RadioGroup value={type} onValueChange={(value: 'income' | 'expense') => {
-                                setType(value);
-                                setCategoryId('');
-                              }}>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="income" id="edit-income" />
-                                  <Label htmlFor="edit-income" className="text-income font-medium">Receita</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="expense" id="edit-expense" />
-                                  <Label htmlFor="edit-expense" className="text-expense font-medium">Despesa</Label>
-                                </div>
-                              </RadioGroup>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-description">Descrição</Label>
-                              <Input
-                                id="edit-description"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-amount">Valor</Label>
-                              <Input
-                                id="edit-amount"
-                                type="text"
-                                value={amount}
-                                onChange={(e) => {
-                                  const value = e.target.value.replace(/[^0-9.,]/g, '');
-                                  setAmount(value);
-                                }}
-                              />
-                            </div>
-
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <Label>Categoria</Label>
-                                  {onAddCategory && onUpdateCategory && onDeleteCategory && (
-                                    <CategoryManagementDialog
-                                      categories={categories}
-                                      onAddCategory={onAddCategory}
-                                      onUpdateCategory={onUpdateCategory}
-                                      onDeleteCategory={onDeleteCategory}
-                                    />
-                                  )}
-                                </div>
-                               <Select value={categoryId} onValueChange={setCategoryId}>
-                                 <SelectTrigger>
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   {filteredCategories.map((category) => (
-                                     <SelectItem key={category.id} value={category.id}>
-                                       <div className="flex items-center gap-2">
-                                         <div
-                                           className="w-3 h-3 rounded-full"
-                                           style={{ backgroundColor: category.color }}
-                                         />
-                                         {category.name}
-                                       </div>
-                                     </SelectItem>
-                                   ))}
-                                 </SelectContent>
-                               </Select>
-                             </div>
-
-                            <div className="space-y-2">
-                              <Label>Data</Label>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal",
-                                      !date && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
-                                    initialFocus
-                                    className="pointer-events-auto"
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-
-                            <div className="flex gap-3">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setEditingTransaction(null)}
-                                className="flex-1"
-                              >
-                                Cancelar
-                              </Button>
-                              <Button onClick={handleUpdate} className="flex-1">
-                                Salvar
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(transaction.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
 
-            {/* Controles de expansão minimalistas */}
-            {(hasMore || showAll) && (
-              <div className="mt-auto">
-                {/* Gradient fade effect */}
-                {hasMore && !showAll && (
-                  <div className="h-6 bg-gradient-to-t from-card to-transparent -mb-2 relative z-10" />
-                )}
-                
-                <div className="flex justify-center pt-4 pb-2">
-                  {showAll ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCollapse}
-                      disabled={isAnimating}
-                      className={cn(
-                        "group relative px-4 py-2 h-auto",
-                        "text-muted-foreground hover:text-foreground",
-                        "transition-all duration-200 ease-out",
-                        "hover:bg-muted/50",
-                        "disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ChevronUp className={cn(
-                          "w-4 h-4 transition-transform duration-200",
-                          isAnimating && "animate-spin"
-                        )} />
-                        <span className="text-sm font-medium">
-                          {isAnimating ? "Recolhendo..." : "Recolher"}
-                        </span>
-                      </div>
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleShowAll}
-                      disabled={isAnimating}
-                      className={cn(
-                        "group relative px-4 py-2 h-auto",
-                        "text-primary hover:text-primary/80",
-                        "transition-all duration-200 ease-out",
-                        "hover:bg-primary/5",
-                        "disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          {isAnimating ? "Carregando..." : `Ver todas (${sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)`}
-                        </span>
-                        <ChevronDown className={cn(
-                          "w-4 h-4 transition-transform duration-200",
-                          isAnimating && "animate-spin"
-                        )} />
-                      </div>
-                    </Button>
-                  )}
-                </div>
+            {hasMore && (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAll(!showAll)}
+                  className="group px-4 py-2 h-auto text-primary hover:text-primary/80 transition-all duration-200 hover:bg-primary/5"
+                >
+                  <div className="flex items-center gap-2">
+                    <ChevronDown className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
+                    <span className="text-sm font-medium">
+                      {showAll ? 'Recolher' : `Ver todas (${sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)`}
+                    </span>
+                  </div>
+                </Button>
               </div>
             )}
           </>
