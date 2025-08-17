@@ -1,23 +1,21 @@
-
-import React, { useState } from 'react';
-import { Transaction, Category } from '@/types/finance';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, Edit, Trash2, Filter, SortAsc, SortDesc, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { formatCurrency } from '@/utils/currency';
-import CategoryManagementDialog from './CategoryManagementDialog';
-import PreviousBalancePrompt from './PreviousBalancePrompt';
-import { useSpring, animated, useTrail, config, useTransition } from '@react-spring/web';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, ChevronUp, ChevronDown } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Transaction, Category } from "@/types/finance";
+import { useToast } from "@/hooks/use-toast";
+import CategoryManagementDialog from "./CategoryManagementDialog";
 
 interface TransactionsListProps {
   transactions: Transaction[];
@@ -63,29 +61,6 @@ const TransactionsList = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const { toast } = useToast();
 
-  // Spring animations
-  const containerAnimation = useSpring({
-    opacity: 1,
-    transform: 'translateY(0px)',
-    from: { opacity: 0, transform: 'translateY(20px)' },
-    config: config.gentle,
-    delay: 100
-  });
-
-  const headerAnimation = useSpring({
-    opacity: 1,
-    transform: 'translateY(0px)',
-    from: { opacity: 0, transform: 'translateY(-20px)' },
-    config: config.wobbly,
-    delay: 200
-  });
-
-  const buttonAnimation = useSpring({
-    opacity: showAll ? 0 : 1,
-    transform: showAll ? 'scale(0.9)' : 'scale(1)',
-    config: config.gentle
-  });
-
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setDescription(transaction.description);
@@ -96,39 +71,37 @@ const TransactionsList = ({
   };
 
   const handleUpdate = () => {
-    if (!editingTransaction) return;
-
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
+    if (!editingTransaction || !description.trim() || !amount || !categoryId) {
       toast({
         title: "Erro",
-        description: "Valor deve ser um número positivo",
-        variant: "destructive",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive"
       });
       return;
     }
 
-    if (!description.trim()) {
+    const numAmount = parseFloat(amount.replace(',', '.'));
+    if (isNaN(numAmount) || numAmount <= 0) {
       toast({
         title: "Erro",
-        description: "Descrição é obrigatória",
-        variant: "destructive",
+        description: "Digite um valor válido",
+        variant: "destructive"
       });
       return;
     }
 
     onUpdateTransaction(editingTransaction.id, {
       description: description.trim(),
-      amount: amountNum,
+      amount: numAmount,
       type,
       categoryId,
-      date: format(date, 'yyyy-MM-dd'),
+      date: format(date, 'yyyy-MM-dd')
     });
 
     setEditingTransaction(null);
     toast({
       title: "Sucesso",
-      description: "Transação atualizada com sucesso",
+      description: "Transação atualizada com sucesso!"
     });
   };
 
@@ -136,24 +109,24 @@ const TransactionsList = ({
     onDeleteTransaction(id);
     toast({
       title: "Sucesso",
-      description: "Transação removida com sucesso",
+      description: "Transação excluída com sucesso!"
     });
   };
 
-  const getCategoryColor = (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    return category?.color || '#6b7280';
-  };
-
   const getCategoryName = (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    return category?.name || 'Categoria não encontrada';
+    return categories.find(cat => cat.id === categoryId)?.name || 'Categoria não encontrada';
   };
 
-  const addFilter = (categoryId: string) => {
-    if (!selectedFilters.includes(categoryId)) {
-      setSelectedFilters(prev => [...prev, categoryId]);
-    }
+  const getCategoryColor = (categoryId: string) => {
+    return categories.find(cat => cat.id === categoryId)?.color || '#64748b';
+  };
+
+  const handleCategoryFilter = (categoryId: string) => {
+    setSelectedFilters(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
   };
 
   const clearFilter = (categoryId: string) => {
@@ -186,28 +159,6 @@ const TransactionsList = ({
   const visibleTransactions = showAll ? sortedTransactions : sortedTransactions.slice(0, INITIAL_VISIBLE_COUNT);
   const hasMore = sortedTransactions.length > INITIAL_VISIBLE_COUNT;
 
-  // Animations for transactions
-  const transactionTrail = useTrail(visibleTransactions.length, {
-    opacity: 1,
-    transform: 'translateY(0px) scale(1)',
-    from: { opacity: 0, transform: 'translateY(20px) scale(0.95)' },
-    config: config.gentle,
-    delay: 300
-  });
-
-  const filterTransitions = useTransition(selectedFilters, {
-    from: { opacity: 0, transform: 'scale(0.8)' },
-    enter: { opacity: 1, transform: 'scale(1)' },
-    leave: { opacity: 0, transform: 'scale(0.8)' },
-    config: config.wobbly
-  });
-
-  const dialogAnimation = useSpring({
-    opacity: editingTransaction ? 1 : 0,
-    transform: editingTransaction ? 'scale(1)' : 'scale(0.9)',
-    config: config.wobbly
-  });
-
   const handleShowAll = () => {
     setIsAnimating(true);
     setTimeout(() => {
@@ -226,364 +177,422 @@ const TransactionsList = ({
 
   const filteredCategories = categories.filter(cat => cat.type === type);
 
-  return (
-    <animated.div style={containerAnimation} className="space-y-6">
-      {showBalancePrompt && previousBalance !== null && onAcceptBalance && onRejectBalance && (
-        <PreviousBalancePrompt
-          previousBalance={previousBalance}
-          onAccept={onAcceptBalance}
-          onReject={onRejectBalance}
-          currentDate={currentDate}
-        />
-      )}
+  const uniqueCategories = [...new Set(transactions.map(t => t.categoryId))]
+    .map(categoryId => categories.find(cat => cat.id === categoryId))
+    .filter(Boolean) as Category[];
 
-      <animated.div 
-        style={headerAnimation}
-        className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
-      >
-        <div className="flex flex-wrap gap-2">
-          <Select value={sortOrder} onValueChange={(value: any) => setSortOrder(value)}>
-            <SelectTrigger className="w-[180px] hover:shadow-md transition-all duration-300 hover:border-primary/50">
-              <div className="flex items-center gap-2">
-                {sortOrder === 'newest' || sortOrder === 'oldest' ? <SortDesc className="w-4 h-4" /> : <SortAsc className="w-4 h-4" />}
-                <SelectValue placeholder="Ordenar por" />
-              </div>
+  return (
+    <Card className="h-full flex flex-col">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <CardTitle>Transações do Mês</CardTitle>
+          <Select
+            value={sortOrder}
+            onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}
+          >
+            <SelectTrigger className="w-full sm:w-[180px] h-8">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Mais recente</SelectItem>
-              <SelectItem value="oldest">Mais antigo</SelectItem>
+              <SelectItem value="newest">Mais recentes</SelectItem>
+              <SelectItem value="oldest">Mais antigos</SelectItem>
               <SelectItem value="highest">Maior valor</SelectItem>
               <SelectItem value="lowest">Menor valor</SelectItem>
             </SelectContent>
           </Select>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2 hover:shadow-md transition-all duration-300 hover:border-primary/50">
-                <Filter className="w-4 h-4" />
-                Filtrar
-                {selectedFilters.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 animate-pulse">
-                    {selectedFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Filtrar por categoria</h4>
-                  {selectedFilters.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-                      Limpar
-                    </Button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                  {categories.map(category => (
-                    <Button
-                      key={category.id}
-                      variant={selectedFilters.includes(category.id) ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => selectedFilters.includes(category.id) 
-                        ? clearFilter(category.id) 
-                        : addFilter(category.id)}
-                      className="w-full justify-start gap-2 transition-all duration-200 hover:scale-105"
-                    >
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      {category.name}
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        ({transactions.filter(t => t.categoryId === category.id).length})
-                      </span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
         </div>
+      </CardHeader>
 
-        {onAddCategory && (
-          <CategoryManagementDialog
-            categories={categories}
-            onAddCategory={onAddCategory}
-            onUpdateCategory={onUpdateCategory}
-            onDeleteCategory={onDeleteCategory}
-          />
-        )}
-      </animated.div>
-
-      {selectedFilters.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {filterTransitions((style, filterId) => {
-            const category = categories.find(c => c.id === filterId);
-            if (!category) return null;
-            return (
-              <animated.div key={filterId} style={style}>
-                <Badge 
-                  variant="secondary" 
-                  className="gap-2 cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-all duration-200 hover:scale-110"
-                  onClick={() => clearFilter(filterId)}
+      {/* CardContent vira coluna flex e ocupa todo o espaço disponível; removemos o padding inferior */}
+      <CardContent className="flex flex-col flex-1 pb-0">
+        {/* Filter Tags */}
+        {uniqueCategories.length > 0 && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2 mb-3">
+              {uniqueCategories.map((category) => (
+                <Badge
+                  key={category.id}
+                  variant={selectedFilters.includes(category.id) ? "default" : "outline"}
+                  className={cn(
+                    "cursor-pointer transition-colors",
+                    selectedFilters.includes(category.id)
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  )}
+                  onClick={() => handleCategoryFilter(category.id)}
+                  style={{
+                    backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
+                    borderColor: category.color
+                  }}
                 >
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: category.color }}
-                  />
                   {category.name}
-                  <span className="ml-1">×</span>
                 </Badge>
-              </animated.div>
-            );
-          })}
-        </div>
-      )}
+              ))}
+            </div>
 
-      {sortedTransactions.length === 0 && !showBalancePrompt ? (
-        <animated.div
-          style={containerAnimation}
-          className="text-muted-foreground text-center py-8"
-        >
-          <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-            <Filter className="w-8 h-8" />
-          </div>
-          <p className="text-lg font-medium">Nenhuma transação encontrada</p>
-          <p className="text-sm">Tente ajustar os filtros ou adicionar novas transações</p>
-        </animated.div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {transactionTrail.map((style, index) => {
-              const transaction = visibleTransactions[index];
-              if (!transaction) return null;
-              
-              return (
-                <animated.div
-                  key={transaction.id}
-                  style={style}
-                  className="relative group"
-                >
-                  <div
-                    className={cn(
-                      "p-4 border rounded-xl bg-card/50 backdrop-blur-sm transition-all duration-300 cursor-pointer",
-                      "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
-                      "hover:border-primary/30 hover:bg-card/80 hover:shadow-lg hover:-translate-y-1"
-                    )}
-                    onClick={() => {
-                      setEditingTransaction(transaction);
-                      setDescription(transaction.description);
-                      setAmount(transaction.amount.toString());
-                      setType(transaction.type);
-                      setCategoryId(transaction.categoryId);
-                      setDate(parseISO(transaction.date));
-                    }}
-                  >
-                    <div className="flex items-center gap-3 flex-1 w-full">
-                      <div
-                        className="w-4 h-4 rounded-full flex-shrink-0 transition-transform duration-200 group-hover:scale-125"
-                        style={{ 
-                          backgroundColor: getCategoryColor(transaction.categoryId),
-                          boxShadow: `0 0 8px ${getCategoryColor(transaction.categoryId)}40`
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-sm truncate">{transaction.description}</span>
-                          <div className="flex items-center space-x-2">
-                            <span
-                              className={`font-semibold text-sm ${
-                                transaction.type === 'income' ? 'text-income' : 'text-expense'
-                              } ${!valuesVisible ? 'blur-md select-none' : ''}`}
-                            >
-                              {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                            </span>
-                            <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform duration-200 group-hover:rotate-180" />
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs text-muted-foreground">
-                            {getCategoryName(transaction.categoryId)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {format(parseISO(transaction.date), 'dd/MM/yyyy', { locale: ptBR })}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:scale-110 transition-transform"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(transaction);
-                          }}
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:scale-110 transition-transform"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(transaction.id);
-                          }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </animated.div>
-              );
-            })}
-
-            {hasMore && (
-              <div className="flex justify-center pt-4">
+            {/* Selected Filters Display */}
+            {selectedFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+                {selectedFilters.map((filterId) => {
+                  const category = categories.find(cat => cat.id === filterId);
+                  return category ? (
+                    <Badge
+                      key={filterId}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => clearFilter(filterId)}
+                    >
+                      {category.name}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
                 <Button
-                  variant="outline"
-                  onClick={showAll ? handleCollapse : handleShowAll}
-                  disabled={isAnimating}
-                  className="gap-2 transition-all duration-300 hover:scale-105 hover:shadow-md hover:border-primary/50"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={clearAllFilters}
                 >
-                  {showAll ? (
-                    <>
-                      <ChevronUp className="w-4 h-4" />
-                      Recolher
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-4 h-4" />
-                      Ver todas ({sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)
-                    </>
-                  )}
+                  Limpar todos
                 </Button>
               </div>
             )}
           </div>
-        </>
-      )}
+        )}
 
-      {editingTransaction && (
-        <Dialog open={!!editingTransaction} onOpenChange={() => setEditingTransaction(null)}>
-          <DialogContent className="sm:max-w-[425px]">
-            <animated.div style={dialogAnimation}>
-              <DialogHeader>
-                <DialogTitle className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Editar Transação
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Input
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Digite a descrição"
-                    className="transition-all duration-200 focus:scale-105"
-                  />
+        {/* Previous Balance Transfer Prompt */}
+        {showBalancePrompt && previousBalance !== null && onAcceptBalance && onRejectBalance && (
+          <div className="border rounded-lg p-4 bg-primary/5 border-primary/20 mb-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                {previousBalance >= 0 ? (
+                  <TrendingUp className="w-4 h-4 text-green-600 flex-shrink-0" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-600 flex-shrink-0" />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">Saldo do mês anterior</span>
+                    <Badge variant="outline" className="text-xs">
+                      Transferência
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Saldo {previousBalance >= 0 ? 'positivo' : 'negativo'} de{' '}
+                    <span className={`font-bold ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+                      R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Valor</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0,00"
-                    className="transition-all duration-200 focus:scale-105"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipo</Label>
-                  <Select value={type} onValueChange={(value: 'income' | 'expense') => setType(value)}>
-                    <SelectTrigger className="transition-all duration-200 hover:scale-105">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="income">Receita</SelectItem>
-                      <SelectItem value="expense">Despesa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="category">Categoria</Label>
-                  <Select value={categoryId} onValueChange={setCategoryId}>
-                    <SelectTrigger className="transition-all duration-200 hover:scale-105">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredCategories.map(category => (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: category.color }}
-                            />
-                            {category.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Data</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal transition-all duration-200 hover:scale-105",
-                          !date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={(date) => date && setDate(date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="flex gap-3">
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`font-bold text-lg ${previousBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+                  {previousBalance >= 0 ? '+' : '-'} R$ {Math.abs(previousBalance).toFixed(2).replace('.', ',')}
+                </span>
+                <div className="flex gap-1">
                   <Button
-                    type="button"
                     variant="outline"
-                    onClick={() => setEditingTransaction(null)}
-                    className="flex-1 transition-all duration-200 hover:scale-105"
+                    size="sm"
+                    onClick={() => onRejectBalance()}
+                    className="h-8 w-8 p-0"
                   >
-                    Cancelar
+                    <X className="w-3 h-3" />
                   </Button>
-                  <Button 
-                    onClick={handleUpdate} 
-                    className="flex-1 transition-all duration-200 hover:scale-105"
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const transaction: Omit<Transaction, 'id'> = {
+                        description: `Saldo transferido do mês anterior`,
+                        amount: Math.abs(previousBalance),
+                        type: previousBalance >= 0 ? 'income' : 'expense',
+                        categoryId: '', // Will be set by the handler
+                        date: `${currentDate.year}-${String(currentDate.month).padStart(2, '0')}-01`
+                      };
+                      onAcceptBalance(transaction);
+                    }}
+                    className="h-8 w-8 p-0"
                   >
-                    Salvar
+                    <Check className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
-            </animated.div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </animated.div>
+            </div>
+          </div>
+        )}
+
+        {sortedTransactions.length === 0 && !showBalancePrompt ? (
+          <p className="text-muted-foreground text-center py-8">
+            Nenhuma transação encontrada para este mês.
+          </p>
+        ) : (
+          <>
+            {/* Lista ocupa o espaço e empurra os controles para baixo */}
+            <div className={cn(
+              "space-y-3 flex-1 transition-all duration-300 ease-in-out",
+              isAnimating && "opacity-75 scale-[0.99]"
+            )}>
+              {visibleTransactions.map((transaction, index) => (
+                <div
+                  key={transaction.id}
+                  className={cn(
+                    "p-4 border rounded-lg hover:bg-muted/50 transition-all duration-200 ease-out",
+                    "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                    "hover:shadow-sm hover:border-primary/20",
+                    !showAll && index >= INITIAL_VISIBLE_COUNT ? 
+                      "animate-in fade-in-0 slide-in-from-top-2 duration-300" : 
+                      "animate-in fade-in-0 duration-200"
+                  )}
+                  style={{
+                    animationDelay: !showAll && index >= INITIAL_VISIBLE_COUNT ? 
+                      `${(index - INITIAL_VISIBLE_COUNT) * 50}ms` : '0ms'
+                  }}
+                >
+                  <div className="flex items-center gap-3 flex-1 w-full">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: getCategoryColor(transaction.categoryId) }}
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{transaction.description}</span>
+                        <Badge
+                          variant="outline"
+                          className="cursor-pointer transition-colors"
+                          onClick={() => handleCategoryFilter(transaction.categoryId)}
+                          style={{ borderColor: getCategoryColor(transaction.categoryId) }}
+                        >
+                          {getCategoryName(transaction.categoryId)}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {format(parseISO(transaction.date), "dd 'de' MMMM", { locale: ptBR })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                    <span
+                      className={`font-semibold transition-all duration-300 ${
+                        transaction.type === 'income' ? 'text-income' : 'text-expense'
+                      } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                    </span>
+
+                    <div className="flex gap-1">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleEdit(transaction)}
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Editar Transação</DialogTitle>
+                          </DialogHeader>
+
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <Label>Tipo</Label>
+                              <RadioGroup value={type} onValueChange={(value: 'income' | 'expense') => {
+                                setType(value);
+                                setCategoryId('');
+                              }}>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="income" id="edit-income" />
+                                  <Label htmlFor="edit-income" className="text-income font-medium">Receita</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem value="expense" id="edit-expense" />
+                                  <Label htmlFor="edit-expense" className="text-expense font-medium">Despesa</Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-description">Descrição</Label>
+                              <Input
+                                id="edit-description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-amount">Valor</Label>
+                              <Input
+                                id="edit-amount"
+                                type="text"
+                                value={amount}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9.,]/g, '');
+                                  setAmount(value);
+                                }}
+                              />
+                            </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <Label>Categoria</Label>
+                                  {onAddCategory && onUpdateCategory && onDeleteCategory && (
+                                    <CategoryManagementDialog
+                                      categories={categories}
+                                      onAddCategory={onAddCategory}
+                                      onUpdateCategory={onUpdateCategory}
+                                      onDeleteCategory={onDeleteCategory}
+                                    />
+                                  )}
+                                </div>
+                               <Select value={categoryId} onValueChange={setCategoryId}>
+                                 <SelectTrigger>
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {filteredCategories.map((category) => (
+                                     <SelectItem key={category.id} value={category.id}>
+                                       <div className="flex items-center gap-2">
+                                         <div
+                                           className="w-3 h-3 rounded-full"
+                                           style={{ backgroundColor: category.color }}
+                                         />
+                                         {category.name}
+                                       </div>
+                                     </SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             </div>
+
+                            <div className="space-y-2">
+                              <Label>Data</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !date && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={(selectedDate) => selectedDate && setDate(selectedDate)}
+                                    initialFocus
+                                    className="pointer-events-auto"
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+
+                            <div className="flex gap-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditingTransaction(null)}
+                                className="flex-1"
+                              >
+                                Cancelar
+                              </Button>
+                              <Button onClick={handleUpdate} className="flex-1">
+                                Salvar
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(transaction.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Controles de expansão minimalistas */}
+            {(hasMore || showAll) && (
+              <div className="mt-auto">
+                {/* Gradient fade effect */}
+                {hasMore && !showAll && (
+                  <div className="h-6 bg-gradient-to-t from-card to-transparent -mb-2 relative z-10" />
+                )}
+                
+                <div className="flex justify-center pt-4 pb-2">
+                  {showAll ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCollapse}
+                      disabled={isAnimating}
+                      className={cn(
+                        "group relative px-4 py-2 h-auto",
+                        "text-muted-foreground hover:text-foreground",
+                        "transition-all duration-200 ease-out",
+                        "hover:bg-muted/50",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ChevronUp className={cn(
+                          "w-4 h-4 transition-transform duration-200",
+                          isAnimating && "animate-spin"
+                        )} />
+                        <span className="text-sm font-medium">
+                          {isAnimating ? "Recolhendo..." : "Recolher"}
+                        </span>
+                      </div>
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShowAll}
+                      disabled={isAnimating}
+                      className={cn(
+                        "group relative px-4 py-2 h-auto",
+                        "text-primary hover:text-primary/80",
+                        "transition-all duration-200 ease-out",
+                        "hover:bg-primary/5",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          {isAnimating ? "Carregando..." : `Ver todas (${sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)`}
+                        </span>
+                        <ChevronDown className={cn(
+                          "w-4 h-4 transition-transform duration-200",
+                          isAnimating && "animate-spin"
+                        )} />
+                      </div>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

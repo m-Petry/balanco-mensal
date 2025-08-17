@@ -1,451 +1,550 @@
-
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
+import { useRef, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, TrendingUp, PieChart as PieChartIcon, Target } from "lucide-react";
+import ChartInfoButton from "./ChartInfoButton";
+import { formatCurrency } from "@/utils/currency";
+import { Transaction, Category } from "@/types/finance";
+import { subMonths, format, getDaysInMonth } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  BarChart as RechartsBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
-  LineChart,
-  Line
-} from 'recharts';
-import { formatCurrency } from '@/utils/currency';
-import { Transaction, Category } from '@/types/finance';
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useSpring, animated, useTrail, config } from '@react-spring/web';
+  AreaChart,
+  Area,
+  Line,
+  ReferenceLine,
+  Tooltip,
+  LabelList,
+  ComposedChart,
+  type LabelProps,
+  type TooltipProps,
+} from "recharts";
 
 interface UnifiedChartsProps {
   transactions: Transaction[];
   categories: Category[];
-  currentDate: { year: number; month: number };
+  totalIncome: number;
+  totalExpense: number;
+  allTransactions: Transaction[];
+  currentDate: Date | { year: number; month: number };
   valuesVisible: boolean;
 }
 
-const CHART_COLORS = [
-  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
-  '#8884D8', '#82CA9D', '#FFC658', '#FF7C7C',
-  '#8DD1E1', '#D084D0', '#FFABAB', '#87CEEB'
-];
-
-const UnifiedCharts: React.FC<UnifiedChartsProps> = ({
+const UnifiedCharts = ({
   transactions,
   categories,
+  totalIncome,
+  totalExpense,
+  allTransactions,
   currentDate,
   valuesVisible
-}) => {
-  // Animation configurations
-  const containerAnimation = useSpring({
-    opacity: 1,
-    transform: 'translateY(0px)',
-    from: { opacity: 0, transform: 'translateY(40px)' },
-    config: config.gentle,
-    delay: 200
-  });
+}: UnifiedChartsProps) => {
+  // Convert currentDate to Date object if needed
+  const dateObj = currentDate instanceof Date ? currentDate : new Date(currentDate.year, currentDate.month - 1);
 
-  const cards = [1, 2, 3, 4];
-  const cardsTrail = useTrail(cards.length, {
-    opacity: 1,
-    transform: 'translateY(0px) scale(1)',
-    from: { opacity: 0, transform: 'translateY(30px) scale(0.95)' },
-    config: config.wobbly,
-    delay: 300
-  });
 
-  // Process data for daily flow chart
-  const getDailyFlowData = () => {
-    const startDate = startOfMonth(new Date(currentDate.year, currentDate.month - 1));
-    const endDate = endOfMonth(new Date(currentDate.year, currentDate.month - 1));
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
+  // Income vs Expense chart data
+  const incomeExpenseData = [
+    {
+      name: 'Receitas',
+      value: totalIncome,
+      fill: 'hsl(142, 76%, 36%)'
+    },
+    {
+      name: 'Despesas',
+      value: totalExpense,
+      fill: 'hsl(0, 84%, 60%)'
+    }
+  ];
 
-    return days.map(day => {
-      const dayStr = format(day, 'yyyy-MM-dd');
-      const dayTransactions = transactions.filter(t => t.date === dayStr);
-      
-      const income = dayTransactions
+  // Expense by category data
+  const expensesByCategory = categories
+    .filter(cat => cat.type === 'expense')
+    .map(category => {
+      const categoryExpenses = transactions
+        .filter(t => t.type === 'expense' && t.categoryId === category.id)
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      return {
+        name: category.name,
+        value: categoryExpenses,
+        fill: category.color
+      };
+    })
+    .filter(item => item.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  // Generate 6-month trend data
+  const generateSixMonthTrend = () => {
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const monthDate = subMonths(dateObj, i);
+      const monthKey = format(monthDate, 'yyyy-MM');
+      const monthTransactions = allTransactions.filter(t => t.date.startsWith(monthKey));
+
+      const income = monthTransactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
-      
-      const expense = dayTransactions
+
+      const expenses = monthTransactions
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + t.amount, 0);
 
-      return {
-        day: format(day, 'dd/MM'),
-        income,
-        expense,
-        net: income - expense
-      };
-    });
+      const balance = income - expenses;
+
+      months.push({
+        month: format(monthDate, 'MMM', { locale: ptBR }),
+        receitas: income,
+        despesas: expenses,
+        saldo: balance,
+      });
+    }
+    return months;
   };
 
-  // Process data for category breakdown
-  const getCategoryData = () => {
-    const categoryTotals = new Map();
+  // Generate daily spending projection for current month
+  const generateDailyProjection = () => {
+    const daysInMonth = getDaysInMonth(dateObj);
+    const currentDay = new Date().getDate();
+    const monthKey = format(dateObj, 'yyyy-MM');
 
-    transactions.forEach(transaction => {
-      const category = categories.find(c => c.id === transaction.categoryId);
-      if (category) {
-        const key = `${category.name}-${transaction.type}`;
-        const current = categoryTotals.get(key) || 0;
-        categoryTotals.set(key, current + transaction.amount);
-      }
-    });
-
-    return Array.from(categoryTotals.entries()).map(([key, value], index) => {
-      const [name, type] = key.split('-');
-      return {
-        name,
-        value,
-        type,
-        color: CHART_COLORS[index % CHART_COLORS.length]
-      };
-    });
-  };
-
-  // Process data for income vs expense comparison
-  const getIncomeExpenseData = () => {
-    const income = transactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const expense = transactions
+    const monthTransactions = allTransactions.filter(t => t.date.startsWith(monthKey));
+    const totalExpenses = monthTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    return [
-      { name: 'Receitas', value: income, color: '#00C49F' },
-      { name: 'Despesas', value: expense, color: '#FF8042' }
-    ];
-  };
+    const dailyAverage = currentDay > 0 ? totalExpenses / currentDay : 0;
+    const projectedTotal = dailyAverage * daysInMonth;
 
-  // Custom animated tooltip component
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    const tooltipAnimation = useSpring({
-      opacity: active ? 1 : 0,
-      transform: active ? 'scale(1)' : 'scale(0.9)',
-      config: config.wobbly
-    });
+    const dailyData = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayTransactions = monthTransactions.filter(t => {
+        const transactionDay = new Date(t.date).getDate();
+        return transactionDay === day && t.type === 'expense';
+      });
 
-    if (active && payload && payload.length) {
-      return (
-        <animated.div 
-          style={tooltipAnimation}
-          className="bg-card/95 backdrop-blur-md border rounded-xl p-4 shadow-2xl border-primary/20"
-        >
-          <p className="font-semibold text-foreground mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2 mb-1">
-              <div 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-sm font-medium" style={{ color: entry.color }}>
-                {entry.name}: {formatCurrency(entry.value)}
-              </span>
-            </div>
-          ))}
-        </animated.div>
-      );
+      const dayExpenses = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
+
+      dailyData.push({
+        day,
+        actual: day <= currentDay ? dayExpenses : null,
+        projected: day > currentDay ? dailyAverage : null,
+      });
     }
-    return null;
+
+    return { dailyData, dailyAverage, projectedTotal };
   };
 
-  const dailyFlowData = getDailyFlowData();
-  const categoryData = getCategoryData();
-  const incomeExpenseData = getIncomeExpenseData();
+  const formatPercentage = (value: number, total: number) => {
+    if (total === 0) return '0%';
+    return `${((value / total) * 100).toFixed(1)}%`;
+  };
 
-  if (!valuesVisible) {
+  const renderIncomeExpenseTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+    if (!active || !payload?.length) return null;
     return (
-      <animated.div style={containerAnimation} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {cardsTrail.map((style, index) => (
-          <animated.div key={index} style={style}>
-            <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-muted/80 via-muted/60 to-muted/40 backdrop-blur-xl rounded-lg flex items-center justify-center">
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-                    <div className="w-6 h-6 rounded-full bg-primary/40 animate-pulse" />
-                  </div>
-                  <p className="text-muted-foreground font-medium">Dados ocultos</p>
-                </div>
-              </div>
-              <CardHeader>
-                <CardTitle className="blur-md bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Gráfico {index + 1}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px] w-full bg-gradient-to-br from-muted/20 to-muted/10 rounded-xl blur-md" />
-              </CardContent>
-            </Card>
-          </animated.div>
-        ))}
-      </animated.div>
+      <div
+        className="px-2 py-1 rounded border text-xs space-y-1"
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          borderColor: 'hsl(var(--border))',
+          color: 'hsl(var(--foreground))',
+          fontSize: '12px'
+        }}
+      >
+        <div>{label}</div>
+        <div>{formatCurrency(Number(payload[0].value))}</div>
+      </div>
     );
-  }
+  };
+
+  const renderCategoryTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div
+        className="px-2 py-1 rounded border text-xs space-y-1 pointer-events-none"
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          borderColor: 'hsl(var(--border))',
+          color: 'hsl(var(--foreground))',
+          filter: valuesVisible ? 'none' : 'blur(4px)',
+        }}
+      >
+        <div>{payload[0].name}</div>
+        <div>{formatPercentage(Number(payload[0].value), totalExpense)}</div>
+      </div>
+    );
+  };
+
+  const pieContainerRef = useRef<HTMLDivElement>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>();
+
+  const handlePieMouseMove = (_: unknown, __: number, e: { chartX: number; chartY: number }) => {
+    if (!pieContainerRef.current) return;
+    const rect = pieContainerRef.current.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const outerRadius = 80;
+    const dx = e.chartX - cx;
+    const dy = e.chartY - cy;
+    const angle = Math.atan2(dy, dx);
+    const offset = 12;
+    const x = cx + Math.cos(angle) * (outerRadius + offset);
+    const y = cy + Math.sin(angle) * (outerRadius + offset);
+    setTooltipPos({ x, y });
+  };
+
+  const handlePieMouseLeave = () => {
+    setTooltipPos(undefined);
+  };
+
+  const sixMonthData = generateSixMonthTrend();
+  const { dailyData, dailyAverage, projectedTotal } = generateDailyProjection();
 
   return (
-    <animated.div style={containerAnimation} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Daily Flow Chart */}
-      <animated.div style={cardsTrail[0]}>
-        <Card className="group hover:shadow-2xl transition-all duration-500 border-primary/10 hover:border-primary/30 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <CardHeader className="relative">
-            <CardTitle className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              Fluxo Diário
-            </CardTitle>
-            <CardDescription className="text-muted-foreground/80">
-              Receitas e despesas por dia do mês
-            </CardDescription>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Card 1: Receitas vs Despesas e Distribuição de Despesas */}
+      <Card>
+        <Tabs defaultValue="income-expense" className="w-full">
+          <CardHeader className="pb-3">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="income-expense" className="flex items-center gap-2 text-xs">
+                <BarChart className="w-3 h-3" />
+                Receitas vs Despesas
+              </TabsTrigger>
+              <TabsTrigger value="distribution" className="flex items-center gap-2 text-xs">
+                <PieChartIcon className="w-3 h-3" />
+                Distribuição
+              </TabsTrigger>
+            </TabsList>
           </CardHeader>
-          <CardContent className="relative">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={dailyFlowData}>
-                <defs>
-                  <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#00C49F" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF8042" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#FF8042" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis 
-                  dataKey="day" 
-                  tick={{ fontSize: 12 }}
-                  tickLine={false}
-                  stroke="hsl(var(--muted-foreground))"
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  tickLine={false}
-                  stroke="hsl(var(--muted-foreground))"
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="income"
-                  stackId="1"
-                  stroke="#00C49F"
-                  fill="url(#incomeGradient)"
-                  name="Receitas"
-                  animationDuration={2000}
-                  strokeWidth={2}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="expense"
-                  stackId="2"
-                  stroke="#FF8042"
-                  fill="url(#expenseGradient)"
-                  name="Despesas"
-                  animationDuration={2000}
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </animated.div>
 
-      {/* Income vs Expense Pie Chart */}
-      <animated.div style={cardsTrail[1]}>
-        <Card className="group hover:shadow-2xl transition-all duration-500 border-primary/10 hover:border-primary/30 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <CardHeader className="relative">
-            <CardTitle className="bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
-              Receitas vs Despesas
-            </CardTitle>
-            <CardDescription className="text-muted-foreground/80">
-              Distribuição total do mês
-            </CardDescription>
+          <TabsContent value="income-expense" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="income-expense" />
+                </div>
+                <div className="h-[280px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart
+                      data={incomeExpenseData}
+                      margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                      barCategoryGap={0}
+                    >
+                      <defs>
+                        <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.2} />
+                        </linearGradient>
+                        <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.2} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={10}
+                      />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={10}
+                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                        width={35}
+                      />
+                      <Tooltip
+                        cursor={{ fill: 'hsl(var(--foreground))', opacity: 0.05 }}
+                        content={renderIncomeExpenseTooltip}
+                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                      />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={120}>
+                        {incomeExpenseData.map((entry) => (
+                          <Cell
+                            key={entry.name}
+                            fill={
+                              entry.name === 'Receitas'
+                                ? 'url(#incomeGradient)'
+                                : 'url(#expenseGradient)'
+                            }
+                          />
+                        ))}
+                        <LabelList
+                          dataKey="value"
+                          position="top"
+                          content={(props: LabelProps) => {
+                            const { value, viewBox } = props;
+                            if (!viewBox) return null;
+                            const { x, y, width } = viewBox;
+                            return (
+                              <text
+                                x={x + width / 2}
+                                y={y - 4}
+                                textAnchor="middle"
+                                fill="hsl(var(--foreground))"
+                                fontSize={12}
+                                className={!valuesVisible ? 'blur-sm select-none' : ''}
+                              >
+                                {formatCurrency(Number(value))}
+                              </text>
+                            );
+                          }}
+                        />
+                      </Bar>
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </TabsContent>
+
+          <TabsContent value="distribution" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="distribution" />
+                </div>
+                {expensesByCategory.length === 0 ? (
+                <div className="h-[280px] flex items-center justify-center text-muted-foreground">
+                  Nenhuma despesa encontrada
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative h-[180px] w-full" ref={pieContainerRef}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={expensesByCategory}
+                          key={expensesByCategory.map(c => c.name).join('-')}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={2}
+                          cornerRadius={4}
+                          dataKey="value"
+                          labelLine={false}
+                          onMouseMove={handlePieMouseMove}
+                          onMouseLeave={handlePieMouseLeave}
+                        >
+                          {expensesByCategory.map((entry) => (
+                            <Cell
+                              key={`cell-${entry.name}`}
+                              fill={entry.fill}
+                              stroke="hsl(var(--background))"
+                              strokeWidth={2}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          content={renderCategoryTooltip}
+                          position={tooltipPos}
+                          wrapperStyle={{ pointerEvents: 'none', visibility: tooltipPos ? 'visible' : 'hidden' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">
+                      <span className="text-muted-foreground">Total</span>
+                      <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
+                    </div>
+                  </div>
+
+                  {/* Legend */}
+                  <div className="grid grid-cols-1 gap-1 max-h-20 overflow-y-auto">
+                    {expensesByCategory.map((category) => (
+                      <div key={category.name} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: category.fill }}
+                          />
+                          <span className="truncate">{category.name}</span>
+                        </div>
+                        <div className={`flex gap-2 text-muted-foreground ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+                          <span>{formatCurrency(category.value)}</span>
+                          <span>({formatPercentage(category.value, totalExpense)})</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                )}
+              </div>
+            </CardContent>
+          </TabsContent>
+        </Tabs>
+      </Card>
+
+      {/* Card 2: Projeção Diária e Tendência 6 Meses */}
+      <Card>
+        <Tabs defaultValue="projection" className="w-full">
+          <CardHeader className="pb-3">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="projection" className="flex items-center gap-2 text-xs">
+                <Target className="w-3 h-3" />
+                Projeção Diária
+              </TabsTrigger>
+              <TabsTrigger value="trend" className="flex items-center gap-2 text-xs">
+                <TrendingUp className="w-3 h-3" />
+                Tendência 6 Meses
+              </TabsTrigger>
+            </TabsList>
           </CardHeader>
-          <CardContent className="relative">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <defs>
-                  <filter id="shadow" height="130%">
-                    <feDropShadow dx="2" dy="2" stdDeviation="3" floodOpacity="0.3"/>
-                  </filter>
-                </defs>
-                <Pie
-                  data={incomeExpenseData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={90}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationDuration={2000}
-                  animationBegin={0}
-                  filter="url(#shadow)"
-                >
-                  {incomeExpenseData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color}
-                      stroke="hsl(var(--background))"
+
+          <TabsContent value="projection" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="projection" />
+                </div>
+                <div className={`text-sm text-muted-foreground mb-4 space-y-1 ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
+                  <p>Média diária: {formatCurrency(dailyAverage)}</p>
+                  <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
+                </div>
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis
+                      dataKey="day"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickFormatter={(value) => `${value.toFixed(0)}`}
+                      width={35}
+                    />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
+                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                        fontSize: '12px'
+                      }}
+                    />
+
+                    <ReferenceLine
+                      y={dailyAverage}
+                      stroke="hsl(217, 91%, 60%)"
+                      strokeDasharray="5 5"
+                      strokeWidth={1}
+                    />
+
+                    <Area
+                      name="Gastos Reais"
+                      type="monotone"
+                      dataKey="actual"
+                      stroke="hsl(142, 76%, 36%)"
+                      fill="url(#actualGradient)"
+                      strokeWidth={2}
+                      connectNulls={false}
+                    />
+                    <Line
+                      name="Projeção"
+                      type="monotone"
+                      dataKey="projected"
+                      stroke="hsl(45, 93%, 47%)"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
+                      connectNulls={false}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+              </div>
+            </CardContent>
+          </TabsContent>
+
+          <TabsContent value="trend" className="mt-0">
+            <CardContent className="pt-0">
+              <div className="relative">
+                <div className="absolute top-2 right-2 z-10">
+                  <ChartInfoButton chartType="trend" />
+                </div>
+                <div className="h-[280px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickMargin={5}
+                    />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={10}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                      width={35}
+                    />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                      labelFormatter={(label) => label}
+                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                        fontSize: '12px'
+                      }}
+                    />
+                    
+                    <Area
+                      name="Receitas"
+                      type="monotone"
+                      dataKey="receitas"
+                      stroke="hsl(142, 76%, 36%)"
+                      fill="hsl(142, 76%, 36%)"
+                      fillOpacity={0.3}
                       strokeWidth={2}
                     />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), '']}
-                  content={<CustomTooltip />}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </animated.div>
-
-      {/* Category Breakdown */}
-      <animated.div style={cardsTrail[2]}>
-        <Card className="group hover:shadow-2xl transition-all duration-500 border-primary/10 hover:border-primary/30 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <CardHeader className="relative">
-            <CardTitle className="bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
-              Por Categoria
-            </CardTitle>
-            <CardDescription className="text-muted-foreground/80">
-              Gastos e receitas por categoria
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={categoryData.slice(0, 8)} 
-                layout="horizontal"
-                margin={{ left: 60 }}
-              >
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0.6}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis 
-                  type="number" 
-                  tick={{ fontSize: 12 }}
-                  stroke="hsl(var(--muted-foreground))"
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  tick={{ fontSize: 12 }}
-                  stroke="hsl(var(--muted-foreground))"
-                  width={80}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'Valor']}
-                  content={<CustomTooltip />}
-                />
-                <Bar 
-                  dataKey="value" 
-                  fill="url(#barGradient)"
-                  animationDuration={2000}
-                  radius={[0, 8, 8, 0]}
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color}
+                    <Area
+                      name="Despesas"
+                      type="monotone"
+                      dataKey="despesas"
+                      stroke="hsl(0, 84%, 60%)"
+                      fill="hsl(0, 84%, 60%)"
+                      fillOpacity={0.3}
+                      strokeWidth={2}
                     />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </animated.div>
-
-      {/* Net Flow Trend */}
-      <animated.div style={cardsTrail[3]}>
-        <Card className="group hover:shadow-2xl transition-all duration-500 border-primary/10 hover:border-primary/30 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <CardHeader className="relative">
-            <CardTitle className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Fluxo Líquido
-            </CardTitle>
-            <CardDescription className="text-muted-foreground/80">
-              Tendência do saldo diário
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={dailyFlowData}>
-                <defs>
-                  <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#8884d8"/>
-                    <stop offset="50%" stopColor="#82ca9d"/>
-                    <stop offset="100%" stopColor="#ffc658"/>
-                  </linearGradient>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge> 
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis 
-                  dataKey="day" 
-                  tick={{ fontSize: 12 }}
-                  tickLine={false}
-                  stroke="hsl(var(--muted-foreground))"
-                />
-                <YAxis 
-                  tick={{ fontSize: 12 }}
-                  tickLine={false}
-                  stroke="hsl(var(--muted-foreground))"
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="net"
-                  stroke="url(#lineGradient)"
-                  strokeWidth={4}
-                  dot={{ 
-                    fill: '#8884d8', 
-                    strokeWidth: 3, 
-                    r: 6,
-                    filter: "url(#glow)"
-                  }}
-                  activeDot={{ 
-                    r: 8,
-                    fill: '#8884d8',
-                    stroke: '#fff',
-                    strokeWidth: 2,
-                    filter: "url(#glow)"
-                  }}
-                  name="Saldo Líquido"
-                  animationDuration={2500}
-                  filter="url(#glow)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </animated.div>
-    </animated.div>
+                    <Area
+                      name="Saldo"
+                      type="monotone"
+                      dataKey="saldo"
+                      stroke="hsl(217, 91%, 60%)"
+                      fill="hsl(217, 91%, 60%)"
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+                </div>
+              </div>
+            </CardContent>
+          </TabsContent>
+        </Tabs>
+      </Card>
+    </div>
   );
 };
 
