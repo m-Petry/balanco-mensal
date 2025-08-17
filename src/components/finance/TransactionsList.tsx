@@ -176,9 +176,9 @@ const TransactionsList = ({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle>Transações do Mês</CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <Button
               variant="outline"
               size="sm"
@@ -188,7 +188,7 @@ const TransactionsList = ({
               {valuesVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </Button>
             <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}>
-              <SelectTrigger className="w-[180px] h-8">
+              <SelectTrigger className="w-[160px] sm:w-[180px] h-8">
                 <ArrowUpDown className="w-4 h-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
@@ -215,14 +215,15 @@ const TransactionsList = ({
                   variant={selectedFilters.includes(category.id) ? "default" : "outline"}
                   className={cn(
                     "cursor-pointer transition-colors",
-                    selectedFilters.includes(category.id) 
-                      ? "bg-primary text-primary-foreground" 
+                    selectedFilters.includes(category.id)
+                      ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
                   )}
                   onClick={() => handleCategoryFilter(category.id)}
                   style={{
-                    backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
-                    borderColor: category.color
+                    backgroundColor: selectedFilters.includes(category.id) ? category.color : 'transparent',
+                    borderColor: category.color,
+                    color: selectedFilters.includes(category.id) ? undefined : category.color,
                   }}
                 >
                   {category.name}
@@ -239,9 +240,13 @@ const TransactionsList = ({
                   return category ? (
                     <Badge
                       key={filterId}
-                      variant="secondary"
+                      variant="outline"
                       className="cursor-pointer"
                       onClick={() => clearFilter(filterId)}
+                      style={{
+                        borderColor: category.color,
+                        color: category.color,
+                      }}
                     >
                       {category.name}
                       <X className="w-3 h-3 ml-1" />
@@ -332,7 +337,7 @@ const TransactionsList = ({
               {visibleTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div 
@@ -344,13 +349,12 @@ const TransactionsList = ({
                         <span className="font-medium">{transaction.description}</span>
                         <Badge
                           variant="outline"
-                          className={cn(
-                            "cursor-pointer transition-colors",
-                            transaction.type === 'income'
-                              ? 'text-income border-income/50 bg-income/10 hover:bg-income/20'
-                              : 'text-expense border-expense/50 bg-expense/10 hover:bg-expense/20'
-                          )}
+                          className="cursor-pointer transition-colors hover:bg-muted"
                           onClick={() => handleCategoryFilter(transaction.categoryId)}
+                          style={{
+                            borderColor: getCategoryColor(transaction.categoryId),
+                            color: getCategoryColor(transaction.categoryId),
+                          }}
                         >
                           {getCategoryName(transaction.categoryId)}
                         </Badge>
@@ -360,16 +364,16 @@ const TransactionsList = ({
                       </div>
                     </div>
                   </div>
-                  
-                   <div className="flex items-center gap-3">
-                     <span 
-                       className={`font-semibold transition-all duration-300 ${
-                         transaction.type === 'income' ? 'text-income' : 'text-expense'
-                       } ${!valuesVisible ? 'blur-md select-none' : ''}`}
-                     >
-                       {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
-                     </span>
-                    
+
+                  <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-3 sm:mt-0">
+                    <span
+                      className={`font-semibold transition-all duration-300 ${
+                        transaction.type === 'income' ? 'text-income' : 'text-expense'
+                      } ${!valuesVisible ? 'blur-md select-none' : ''}`}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}R$ {transaction.amount.toFixed(2).replace('.', ',')}
+                    </span>
+
                     <div className="flex gap-1">
                       <Dialog>
                         <DialogTrigger asChild>

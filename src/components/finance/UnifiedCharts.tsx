@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, TrendingUp, PieChart as PieChartIcon, Target } from "lucide-react";
@@ -79,6 +80,8 @@ const UnifiedCharts = ({
     })
     .filter(item => item.value > 0)
     .sort((a, b) => b.value - a.value);
+
+  const [activeSlice, setActiveSlice] = useState<{ name: string; value: number } | null>(null);
 
   // Generate 6-month trend data
   const generateSixMonthTrend = () => {
@@ -291,6 +294,8 @@ const UnifiedCharts = ({
                           cornerRadius={4}
                           dataKey="value"
                           labelLine={false}
+                          onMouseMove={(_, index) => setActiveSlice(expensesByCategory[index])}
+                          onMouseLeave={() => setActiveSlice(null)}
                         >
                           {expensesByCategory.map((entry) => (
                             <Cell
@@ -301,21 +306,20 @@ const UnifiedCharts = ({
                             />
                           ))}
                         </Pie>
-                        <Tooltip
-                          formatter={(value: number, _name, props) => [
-                            formatPercentage(Number(value), totalExpense),
-                            props?.payload?.name,
-                          ]}
-                          wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
-                          contentStyle={{
-                            backgroundColor: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                          }}
-                          itemStyle={{ color: 'hsl(var(--foreground))' }}
-                          labelStyle={{ color: 'hsl(var(--foreground))' }}
-                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {activeSlice && (
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 -top-2 -translate-y-full px-2 py-1 rounded border text-xs pointer-events-none"
+                        style={{
+                          backgroundColor: 'hsl(var(--card))',
+                          borderColor: 'hsl(var(--border))',
+                          color: 'hsl(var(--foreground))',
+                        }}
+                      >
+                        <span className="font-medium">{activeSlice.name}</span>: {formatPercentage(activeSlice.value, totalExpense)}
+                      </div>
+                    )}
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">
@@ -323,7 +327,7 @@ const UnifiedCharts = ({
                       <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
                     </div>
                   </div>
-                  
+
                   {/* Legend */}
                   <div className="grid grid-cols-1 gap-1 max-h-20 overflow-y-auto">
                     {expensesByCategory.map((category) => (
