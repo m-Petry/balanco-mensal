@@ -10,17 +10,11 @@ import TransactionsList from "@/components/finance/TransactionsList";
 import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
-import { FloatingActionButton } from "@/components/ui/floating-action-button";
-import { useFabVisibility } from "@/hooks/use-fab-visibility";
+import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 const FinanceDashboard = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const { opacity, handlers } = useFabVisibility({
-    fadeDelay: 3000,
-    fadeOpacity: 'faded',
-    enableAutoFade: true
-  });
   const [activeTab, setActiveTab] = useState<'summary' | 'transactions' | 'charts'>('summary');
   const [valuesVisible, setValuesVisible] = useState(false);
   
@@ -186,7 +180,7 @@ const FinanceDashboard = () => {
           onTabChange={setActiveTab}
         />
 
-        {/* Modern Floating Action Button */}
+        {/* Floating Add Transaction Button */}
         <AddTransactionDialog
           categories={categories}
           onAddTransaction={addTransaction}
@@ -194,20 +188,12 @@ const FinanceDashboard = () => {
           onUpdateCategory={updateCategory}
           onDeleteCategory={deleteCategory}
           trigger={
-            <FloatingActionButton
-              variant="default"
-              size="md"
-              position="bottom-right"
-              opacity={opacity}
-              glass={true}
-              pulse={false}
-              ripple={true}
-              icon={<Plus className="h-6 w-6" />}
-              label="Nova Transação"
-              showLabel={true}
-              className="sm:hidden"
-              {...handlers}
-            />
+            <Button
+              size="icon"
+              className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg sm:hidden z-[60]"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
           }
         />
       </div>
