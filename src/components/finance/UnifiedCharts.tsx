@@ -24,6 +24,7 @@ import {
   LabelList,
   ComposedChart,
   type LabelProps,
+  type TooltipProps,
 } from "recharts";
 
 interface UnifiedChartsProps {
@@ -145,6 +146,24 @@ const UnifiedCharts = ({
     return `${((value / total) * 100).toFixed(1)}%`;
   };
 
+  const renderIncomeExpenseTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div
+        className="px-2 py-1 rounded border text-xs space-y-1"
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          borderColor: 'hsl(var(--border))',
+          color: 'hsl(var(--foreground))',
+          fontSize: '12px'
+        }}
+      >
+        <div>{label}</div>
+        <div>{formatCurrency(Number(payload[0].value))}</div>
+      </div>
+    );
+  };
+
   const sixMonthData = generateSixMonthTrend();
   const { dailyData, dailyAverage, projectedTotal } = generateDailyProjection();
 
@@ -202,15 +221,9 @@ const UnifiedCharts = ({
                         width={35}
                       />
                       <Tooltip
-                        formatter={(value: number) => [formatCurrency(value), '']}
-                        labelFormatter={(label) => label}
+                        cursor={{ fill: 'hsl(var(--foreground))', opacity: 0.05 }}
+                        content={renderIncomeExpenseTooltip}
                         wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '6px',
-                          fontSize: '12px'
-                        }}
                       />
                       <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={120}>
                         {incomeExpenseData.map((entry) => (
@@ -269,6 +282,7 @@ const UnifiedCharts = ({
                       <PieChart>
                         <Pie
                           data={expensesByCategory}
+                          key={expensesByCategory.map(c => c.name).join('-')}
                           cx="50%"
                           cy="50%"
                           innerRadius={50}
@@ -278,9 +292,9 @@ const UnifiedCharts = ({
                           dataKey="value"
                           labelLine={false}
                         >
-                          {expensesByCategory.map((entry, index) => (
+                          {expensesByCategory.map((entry) => (
                             <Cell
-                              key={`cell-${index}`}
+                              key={`cell-${entry.name}`}
                               fill={entry.fill}
                               stroke="hsl(var(--background))"
                               strokeWidth={2}
@@ -288,19 +302,23 @@ const UnifiedCharts = ({
                           ))}
                         </Pie>
                         <Tooltip
-                          formatter={(value: number) => [formatCurrency(value), '']}
-                          labelFormatter={(label) => label}
+                          formatter={(value: number, _name, props) => [
+                            formatPercentage(Number(value), totalExpense),
+                            props?.payload?.name,
+                          ]}
                           wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                           contentStyle={{
                             backgroundColor: 'hsl(var(--card))',
                             border: '1px solid hsl(var(--border))',
                             borderRadius: '6px',
-                            fontSize: '12px'
+                            fontSize: '12px',
                           }}
+                          itemStyle={{ color: 'hsl(var(--foreground))' }}
+                          labelStyle={{ color: 'hsl(var(--foreground))' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">
                       <span className="text-muted-foreground">Total</span>
                       <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
                     </div>
@@ -308,10 +326,10 @@ const UnifiedCharts = ({
                   
                   {/* Legend */}
                   <div className="grid grid-cols-1 gap-1 max-h-20 overflow-y-auto">
-                    {expensesByCategory.slice(0, 5).map((category, index) => (
-                      <div key={index} className="flex items-center justify-between text-xs">
+                    {expensesByCategory.map((category) => (
+                      <div key={category.name} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
-                          <div 
+                          <div
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: category.fill }}
                           />
