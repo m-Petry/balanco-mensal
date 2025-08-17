@@ -68,7 +68,7 @@ const FinanceDashboard = () => {
 
   if (!isUnlocked) {
     return (
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <div className="min-h-screen bg-background">
           <PasswordLock onUnlock={handleUnlock} />
         </div>
@@ -77,7 +77,7 @@ const FinanceDashboard = () => {
   }
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <div className="min-h-screen bg-background">
         <Header
           currentDate={currentDate}
@@ -189,10 +189,11 @@ const FinanceDashboard = () => {
           onDeleteCategory={deleteCategory}
           trigger={
             <Button
+              variant="gradient"
               size="icon"
-              className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg sm:hidden z-[60]"
+              className="fixed bottom-24 right-4 h-16 w-16 rounded-full shadow-lg sm:hidden z-[60] animate-glow-pulse"
             >
-              <Plus className="h-6 w-6" />
+              <Plus className="h-8 w-8" />
             </Button>
           }
         />
