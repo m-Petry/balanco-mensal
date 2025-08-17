@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarIcon, Edit2, Trash2, X, Plus, Minus, ArrowUpDown, Check, TrendingUp, TrendingDown, ChevronUp, ChevronDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -58,6 +58,7 @@ const TransactionsList = ({
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const INITIAL_VISIBLE_COUNT = 6;
   const [showAll, setShowAll] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -159,11 +160,19 @@ const TransactionsList = ({
   const hasMore = sortedTransactions.length > INITIAL_VISIBLE_COUNT;
 
   const handleShowAll = () => {
-    setShowAll(true);
+    setIsAnimating(true);
+    setTimeout(() => {
+      setShowAll(true);
+      setIsAnimating(false);
+    }, 150);
   };
 
   const handleCollapse = () => {
-    setShowAll(false);
+    setIsAnimating(true);
+    setTimeout(() => {
+      setShowAll(false);
+      setIsAnimating(false);
+    }, 150);
   };
 
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -320,11 +329,25 @@ const TransactionsList = ({
         ) : (
           <>
             {/* Lista ocupa o espaço e empurra os controles para baixo */}
-            <div className="space-y-3 flex-1">
-              {visibleTransactions.map((transaction) => (
+            <div className={cn(
+              "space-y-3 flex-1 transition-all duration-300 ease-in-out",
+              isAnimating && "opacity-75 scale-[0.99]"
+            )}>
+              {visibleTransactions.map((transaction, index) => (
                 <div
                   key={transaction.id}
-                  className="p-4 border rounded-lg hover:bg-muted/50 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                  className={cn(
+                    "p-4 border rounded-lg hover:bg-muted/50 transition-all duration-200 ease-out",
+                    "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                    "hover:shadow-sm hover:border-primary/20",
+                    !showAll && index >= INITIAL_VISIBLE_COUNT ? 
+                      "animate-in fade-in-0 slide-in-from-top-2 duration-300" : 
+                      "animate-in fade-in-0 duration-200"
+                  )}
+                  style={{
+                    animationDelay: !showAll && index >= INITIAL_VISIBLE_COUNT ? 
+                      `${(index - INITIAL_VISIBLE_COUNT) * 50}ms` : '0ms'
+                  }}
                 >
                   <div className="flex items-center gap-3 flex-1 w-full">
                     <div
@@ -505,31 +528,68 @@ const TransactionsList = ({
               ))}
             </div>
 
-            {/* Controles de expansão ancorados no rodapé do CardContent */}
+            {/* Controles de expansão modernos */}
             {(hasMore || showAll) && (
-              <div className="mt-auto flex justify-center gap-2 pt-4 pb-4 border-t">
-                {showAll && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCollapse}
-                    className="flex items-center gap-1"
-                  >
-                    <Minus className="w-4 h-4" />
-                    Recolher
-                  </Button>
-                )}
+              <div className="mt-auto">
+                {/* Gradient fade effect */}
                 {hasMore && !showAll && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleShowAll}
-                    className="flex items-center gap-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Mostrar tudo
-                  </Button>
+                  <div className="h-8 bg-gradient-to-t from-card to-transparent -mb-4 relative z-10" />
                 )}
+                
+                <div className="flex justify-center pt-6 pb-4">
+                  {showAll ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCollapse}
+                      disabled={isAnimating}
+                      className={cn(
+                        "group relative overflow-hidden rounded-full px-6 py-2",
+                        "bg-muted/50 hover:bg-muted border border-border/50",
+                        "transition-all duration-300 ease-out",
+                        "hover:shadow-md hover:scale-105",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <ChevronUp className={cn(
+                          "w-4 h-4 transition-transform duration-300",
+                          isAnimating && "rotate-180"
+                        )} />
+                        <span className="font-medium">
+                          {isAnimating ? "Recolhendo..." : "Recolher"}
+                        </span>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShowAll}
+                      disabled={isAnimating}
+                      className={cn(
+                        "group relative overflow-hidden rounded-full px-6 py-2",
+                        "bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10",
+                        "border border-primary/20 hover:border-primary/30",
+                        "transition-all duration-300 ease-out",
+                        "hover:shadow-lg hover:shadow-primary/20 hover:scale-105",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-primary">
+                          {isAnimating ? "Carregando..." : `Ver todas (${sortedTransactions.length - INITIAL_VISIBLE_COUNT} mais)`}
+                        </span>
+                        <ChevronDown className={cn(
+                          "w-4 h-4 text-primary transition-transform duration-300",
+                          isAnimating && "rotate-180"
+                        )} />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </>
