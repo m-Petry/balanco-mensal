@@ -121,8 +121,8 @@ const TransactionsList = ({
   };
 
   const handleCategoryFilter = (categoryId: string) => {
-    setSelectedFilters(prev => 
-      prev.includes(categoryId) 
+    setSelectedFilters(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     );
@@ -136,7 +136,7 @@ const TransactionsList = ({
     setSelectedFilters([]);
   };
 
-  const filteredTransactions = selectedFilters.length > 0 
+  const filteredTransactions = selectedFilters.length > 0
     ? transactions.filter(t => selectedFilters.includes(t.categoryId))
     : transactions;
 
@@ -207,8 +207,8 @@ const TransactionsList = ({
                   variant={selectedFilters.includes(category.id) ? "default" : "outline"}
                   className={cn(
                     "cursor-pointer transition-colors",
-                    selectedFilters.includes(category.id) 
-                      ? "bg-primary text-primary-foreground" 
+                    selectedFilters.includes(category.id)
+                      ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
                   )}
                   onClick={() => handleCategoryFilter(category.id)}
@@ -221,7 +221,7 @@ const TransactionsList = ({
                 </Badge>
               ))}
             </div>
-            
+
             {/* Selected Filters Display */}
             {selectedFilters.length > 0 && (
               <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
@@ -374,7 +374,7 @@ const TransactionsList = ({
                           <DialogHeader>
                             <DialogTitle>Editar Transação</DialogTitle>
                           </DialogHeader>
-                          
+
                           <div className="space-y-6">
                             <div className="space-y-3">
                               <Label>Tipo</Label>
@@ -435,8 +435,8 @@ const TransactionsList = ({
                                    {filteredCategories.map((category) => (
                                      <SelectItem key={category.id} value={category.id}>
                                        <div className="flex items-center gap-2">
-                                         <div 
-                                           className="w-3 h-3 rounded-full" 
+                                         <div
+                                           className="w-3 h-3 rounded-full"
                                            style={{ backgroundColor: category.color }}
                                          />
                                          {category.name}
@@ -475,9 +475,9 @@ const TransactionsList = ({
                             </div>
 
                             <div className="flex gap-3">
-                              <Button 
-                                type="button" 
-                                variant="outline" 
+                              <Button
+                                type="button"
+                                variant="outline"
                                 onClick={() => setEditingTransaction(null)}
                                 className="flex-1"
                               >
@@ -490,7 +490,7 @@ const TransactionsList = ({
                           </div>
                         </DialogContent>
                       </Dialog>
-                      
+
                       <Button
                         variant="ghost"
                         size="icon"

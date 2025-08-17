@@ -39,8 +39,8 @@ interface UnifiedChartsProps {
 }
 
 const UnifiedCharts = ({
-  transactions, 
-  categories, 
+  transactions,
+  categories,
   totalIncome,
   totalExpense,
   allTransactions,
@@ -72,7 +72,7 @@ const UnifiedCharts = ({
       const categoryExpenses = transactions
         .filter(t => t.type === 'expense' && t.categoryId === category.id)
         .reduce((sum, t) => sum + t.amount, 0);
-      
+
       return {
         name: category.name,
         value: categoryExpenses,
@@ -89,17 +89,17 @@ const UnifiedCharts = ({
       const monthDate = subMonths(dateObj, i);
       const monthKey = format(monthDate, 'yyyy-MM');
       const monthTransactions = allTransactions.filter(t => t.date.startsWith(monthKey));
-      
+
       const income = monthTransactions
         .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
-      
+
       const expenses = monthTransactions
         .filter(t => t.type === 'expense')
         .reduce((sum, t) => sum + t.amount, 0);
-      
+
       const balance = income - expenses;
-      
+
       months.push({
         month: format(monthDate, 'MMM', { locale: ptBR }),
         receitas: income,
@@ -115,31 +115,31 @@ const UnifiedCharts = ({
     const daysInMonth = getDaysInMonth(dateObj);
     const currentDay = new Date().getDate();
     const monthKey = format(dateObj, 'yyyy-MM');
-    
+
     const monthTransactions = allTransactions.filter(t => t.date.startsWith(monthKey));
     const totalExpenses = monthTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
-    
+
     const dailyAverage = currentDay > 0 ? totalExpenses / currentDay : 0;
     const projectedTotal = dailyAverage * daysInMonth;
-    
+
     const dailyData = [];
     for (let day = 1; day <= daysInMonth; day++) {
       const dayTransactions = monthTransactions.filter(t => {
         const transactionDay = new Date(t.date).getDate();
         return transactionDay === day && t.type === 'expense';
       });
-      
+
       const dayExpenses = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
-      
+
       dailyData.push({
         day,
         actual: day <= currentDay ? dayExpenses : null,
         projected: day > currentDay ? dailyAverage : null,
       });
     }
-    
+
     return { dailyData, dailyAverage, projectedTotal };
   };
 
@@ -357,7 +357,7 @@ const UnifiedCharts = ({
                       <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
                     </div>
                   </div>
-                  
+
                   {/* Legend */}
                   <div className="grid grid-cols-1 gap-1 max-h-20 overflow-y-auto">
                     {expensesByCategory.map((category) => (
