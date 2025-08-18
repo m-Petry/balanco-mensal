@@ -59,10 +59,11 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
         sx={{
           p: 0,
           m: 0,
-          [`& .MuiTimelineItem-root:before`]: { flex: 0, padding: 0 }
+          '& .MuiTimelineItem-root:first-of-type': { minHeight: 0, mt: 0 },
+          '& .MuiTimelineItem-root:before': { flex: 0, padding: 0 }
         }}
       >
-        {visibleTransactions.map((transaction, index) => {
+        {visibleTransactions.map(transaction => {
           const isIncome = transaction.type === 'income';
           const category = getCategory(transaction.categoryId);
 
@@ -70,8 +71,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
             <TimelineItem
               key={transaction.id}
               sx={{
-                minHeight: { xs: '80px', sm: '110px' },
-                mt: index === 0 ? 0 : undefined
+                minHeight: { xs: '80px', sm: '110px' }
               }}
             >
               {!isMobile && (
