@@ -17,13 +17,13 @@ import {
   PieChart,
   Pie,
   Cell,
-  AreaChart,
   Area,
   Line,
   ReferenceLine,
   Tooltip,
   LabelList,
   ComposedChart,
+  Legend,
   type LabelProps,
   type TooltipProps,
 } from "recharts";
@@ -483,15 +483,21 @@ const UnifiedCharts = ({
                 </div>
                 <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="month" 
+                  <ComposedChart data={sixMonthData} margin={{ top: 20, right: 10, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="saldoGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis
+                      dataKey="month"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickMargin={5}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
@@ -508,35 +514,38 @@ const UnifiedCharts = ({
                         fontSize: '12px'
                       }}
                     />
-                    
-                    <Area
+                    <Legend
+                      verticalAlign="top"
+                      align="left"
+                      height={32}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                    <Line
                       name="Receitas"
                       type="monotone"
                       dataKey="receitas"
                       stroke="hsl(142, 76%, 36%)"
-                      fill="hsl(142, 76%, 36%)"
-                      fillOpacity={0.3}
                       strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(142, 76%, 36%)' }}
                     />
-                    <Area
+                    <Line
                       name="Despesas"
                       type="monotone"
                       dataKey="despesas"
                       stroke="hsl(0, 84%, 60%)"
-                      fill="hsl(0, 84%, 60%)"
-                      fillOpacity={0.3}
                       strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(0, 84%, 60%)' }}
                     />
                     <Area
                       name="Saldo"
                       type="monotone"
                       dataKey="saldo"
                       stroke="hsl(217, 91%, 60%)"
-                      fill="hsl(217, 91%, 60%)"
-                      fillOpacity={0.2}
+                      fill="url(#saldoGradient)"
                       strokeWidth={2}
                     />
-                  </AreaChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
                 </div>
               </div>
