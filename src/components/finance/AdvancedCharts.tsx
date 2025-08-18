@@ -144,56 +144,53 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
             <CardContent className="pt-0">
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <LineChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="month" 
+                    <XAxis
+                      dataKey="month"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickMargin={5}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelFormatter={(label) => label}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
                       }}
                     />
-                    
-                    <Area
-                      type="monotone"
+
+                    <Line
+                      type="linear"
                       dataKey="receitas"
                       stroke="hsl(142, 76%, 36%)"
-                      fill="hsl(142, 76%, 36%)"
-                      fillOpacity={0.3}
                       strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(142, 76%, 36%)' }}
                     />
-                    <Area
-                      type="monotone"
+                    <Line
+                      type="linear"
                       dataKey="despesas"
                       stroke="hsl(0, 84%, 60%)"
-                      fill="hsl(0, 84%, 60%)"
-                      fillOpacity={0.3}
                       strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(0, 84%, 60%)' }}
                     />
-                    <Area
-                      type="monotone"
+                    <Line
+                      type="linear"
                       dataKey="saldo"
                       stroke="hsl(217, 91%, 60%)"
-                      fill="hsl(217, 91%, 60%)"
-                      fillOpacity={0.2}
                       strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(217, 91%, 60%)' }}
                     />
-                  </AreaChart>
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
