@@ -170,12 +170,13 @@ const UnifiedCharts = ({
     if (!active || !payload?.length) return null;
     return (
       <div
-        className="px-2 py-1 rounded border text-xs space-y-1 pointer-events-none"
+        className="px-2 py-1 rounded border text-xs space-y-1 pointer-events-none shadow-lg z-50 relative"
         style={{
           backgroundColor: 'hsl(var(--card))',
           borderColor: 'hsl(var(--border))',
           color: 'hsl(var(--foreground))',
           filter: valuesVisible ? 'none' : 'blur(4px)',
+          zIndex: 1000,
         }}
       >
         <div>{payload[0].name}</div>
@@ -348,11 +349,15 @@ const UnifiedCharts = ({
                         <Tooltip
                           content={renderCategoryTooltip}
                           position={tooltipPos}
-                          wrapperStyle={{ pointerEvents: 'none', visibility: tooltipPos ? 'visible' : 'hidden' }}
+                          wrapperStyle={{ 
+                            pointerEvents: 'none', 
+                            visibility: tooltipPos ? 'visible' : 'hidden',
+                            zIndex: 50
+                          }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-xs pointer-events-none z-10">
                       <span className="text-muted-foreground">Total</span>
                       <span className={`font-medium ${!valuesVisible ? 'blur-md select-none' : ''}`}>{formatCurrency(totalExpense)}</span>
                     </div>
