@@ -10,6 +10,7 @@ import TransactionsList from "@/components/finance/TransactionsList";
 import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
+import CategoryManagementDialog from "@/components/finance/CategoryManagementDialog";
 import { Button } from "@/components/ui/button";
 import { ModernNavigation } from "@/components/ui/modern-navigation";
 import { Plus, Home, CreditCard, TrendingUp, Settings } from "lucide-react";
@@ -202,8 +203,10 @@ const FinanceDashboard = () => {
           activeItem={activeTab}
           onItemClick={(item) => {
             if (item.id === 'settings') {
-              // Toggle values visibility for settings
-              toggleValuesVisibility();
+              const manageButton = document.querySelector('[data-category-management]');
+              if (manageButton) {
+                (manageButton as HTMLButtonElement).click();
+              }
             } else {
               setActiveTab(item.id as 'summary' | 'transactions' | 'charts');
             }
@@ -237,6 +240,21 @@ const FinanceDashboard = () => {
               className="hidden"
             >
               Add Transaction
+            </button>
+          }
+        />
+
+        <CategoryManagementDialog
+          categories={categories}
+          onAddCategory={addCategory}
+          onUpdateCategory={updateCategory}
+          onDeleteCategory={deleteCategory}
+          trigger={
+            <button
+              data-category-management
+              className="hidden"
+            >
+              Manage Categories
             </button>
           }
         />

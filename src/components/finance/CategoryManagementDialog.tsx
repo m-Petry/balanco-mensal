@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,6 +29,7 @@ interface CategoryManagementDialogProps {
   onAddCategory: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory: (id: string, updates: Partial<Category>) => void;
   onDeleteCategory: (id: string) => void;
+  trigger?: ReactNode;
 }
 
 const initialColors = [
@@ -54,6 +55,7 @@ const CategoryManagementDialog = ({
   onAddCategory,
   onUpdateCategory,
   onDeleteCategory,
+  trigger
 }: CategoryManagementDialogProps) => {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -121,9 +123,11 @@ const CategoryManagementDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Settings className="w-4 h-4" />
-        </Button>
+        {trigger ?? (
+          <Button variant="outline" size="icon">
+            <Settings className="w-4 h-4" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>

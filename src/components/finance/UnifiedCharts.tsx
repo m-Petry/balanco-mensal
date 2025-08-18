@@ -446,12 +446,25 @@ const UnifiedCharts = ({
                         fontSize: '12px'
                       }}
                     />
+                    <Legend
+                      verticalAlign="top"
+                      align="left"
+                      height={32}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
 
                     <ReferenceLine
                       y={dailyAverage}
                       stroke="hsl(217, 91%, 60%)"
                       strokeDasharray="5 5"
                       strokeWidth={1}
+                      label={{
+                        value: 'Média diária',
+                        position: 'insideLeft',
+                        fill: 'hsl(217, 91%, 60%)',
+                        fontSize: 10
+                      }}
                     />
 
                     <Area
