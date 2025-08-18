@@ -91,9 +91,9 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                 </TimelineDot>
                 <TimelineConnector />
               </TimelineSeparator>
-              <TimelineContent sx={{ py: { xs: 1, sm: '12px' }, px: { xs: 0, sm: 2 } }}>
-                <Card className="w-full hover:border-primary/30 transition-colors">
-                  <CardHeader className="p-3 pb-2 sm:p-4 sm:pb-2">
+              <TimelineContent sx={{ py: { xs: 1, sm: '12px' }, px: { xs: 1, sm: 2, md: 3 } }}>
+                <Card className="w-full flex flex-col gap-2 sm:gap-3 hover:border-primary/30 transition-colors">
+                  <CardHeader className="p-2 sm:p-4 md:p-5">
                     <CardTitle className="text-sm font-medium truncate">{transaction.description}</CardTitle>
                     {isMobile && (
                       <p className="text-xs text-muted-foreground mt-1">
@@ -101,7 +101,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                       </p>
                     )}
                   </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0 space-y-2">
+                  <CardContent className="p-2 sm:p-4 md:p-5 space-y-2">
                     {category && (
                       <Badge
                         variant="outline"
