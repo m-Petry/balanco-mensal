@@ -12,12 +12,14 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  ComposedChart,
+  Bar,
   LineChart,
   Line,
   ReferenceLine,
   Tooltip,
+  Legend,
 } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface AdvancedChartsProps {
   transactions: Transaction[];
@@ -144,56 +146,65 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
             <CardContent className="pt-0">
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <ComposedChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="month" 
+                    <XAxis
+                      dataKey="month"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickMargin={5}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelFormatter={(label) => label}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
                       }}
                     />
-                    
-                    <Area
-                      type="monotone"
+                    <Legend
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+
+                    <Bar
                       dataKey="receitas"
-                      stroke="hsl(142, 76%, 36%)"
-                      fill="hsl(142, 76%, 36%)"
-                      fillOpacity={0.3}
-                      strokeWidth={2}
+                      fill="url(#incomeGradient)"
+                      barSize={20}
+                      radius={[4,4,0,0]}
                     />
-                    <Area
-                      type="monotone"
+                    <Bar
                       dataKey="despesas"
-                      stroke="hsl(0, 84%, 60%)"
-                      fill="hsl(0, 84%, 60%)"
-                      fillOpacity={0.3}
-                      strokeWidth={2}
+                      fill="url(#expenseGradient)"
+                      barSize={20}
+                      radius={[4,4,0,0]}
                     />
-                    <Area
+                    <Line
                       type="monotone"
                       dataKey="saldo"
                       stroke="hsl(217, 91%, 60%)"
-                      fill="hsl(217, 91%, 60%)"
-                      fillOpacity={0.2}
                       strokeWidth={2}
+                      dot={{ r: 4, strokeWidth: 2, stroke: 'hsl(217, 91%, 60%)', fill: 'hsl(217, 91%, 60%)' }}
+                      activeDot={{ r: 6 }}
                     />
-                  </AreaChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
