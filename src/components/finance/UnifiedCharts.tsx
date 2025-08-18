@@ -17,9 +17,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  AreaChart,
   Area,
   Line,
-  LineChart,
   ReferenceLine,
   Tooltip,
   LabelList,
@@ -483,15 +483,15 @@ const UnifiedCharts = ({
                 </div>
                 <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <AreaChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="month"
+                    <XAxis 
+                      dataKey="month" 
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickMargin={5}
                     />
-                    <YAxis
+                    <YAxis 
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
@@ -508,41 +508,35 @@ const UnifiedCharts = ({
                         fontSize: '12px'
                       }}
                     />
-
-                    <Line
+                    
+                    <Area
                       name="Receitas"
-                      type="linear"
+                      type="monotone"
                       dataKey="receitas"
                       stroke="hsl(142, 76%, 36%)"
+                      fill="hsl(142, 76%, 36%)"
+                      fillOpacity={0.3}
                       strokeWidth={2}
-                      dot={{ r: 3 }}
-                      activeDot={{ r: 5 }}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
                     />
-                    <Line
+                    <Area
                       name="Despesas"
-                      type="linear"
+                      type="monotone"
                       dataKey="despesas"
                       stroke="hsl(0, 84%, 60%)"
+                      fill="hsl(0, 84%, 60%)"
+                      fillOpacity={0.3}
                       strokeWidth={2}
-                      dot={{ r: 3 }}
-                      activeDot={{ r: 5 }}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
                     />
-                    <Line
+                    <Area
                       name="Saldo"
-                      type="linear"
+                      type="monotone"
                       dataKey="saldo"
                       stroke="hsl(217, 91%, 60%)"
+                      fill="hsl(217, 91%, 60%)"
+                      fillOpacity={0.2}
                       strokeWidth={2}
-                      dot={{ r: 3 }}
-                      activeDot={{ r: 5 }}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
                 </div>
               </div>

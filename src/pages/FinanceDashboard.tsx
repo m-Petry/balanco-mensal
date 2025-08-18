@@ -5,7 +5,7 @@ import PasswordLock from "@/components/auth/PasswordLock";
 import Header from "@/components/layout/Header";
 import MobileNavigation from "@/components/layout/MobileNavigation";
 import FinancialSummary from "@/components/finance/FinancialSummary";
-import ModernUnifiedCharts from "@/components/finance/ModernUnifiedCharts";
+import UnifiedCharts from "@/components/finance/UnifiedCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
 import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
@@ -117,8 +117,8 @@ const FinanceDashboard = () => {
                 valuesVisible={valuesVisible}
               />
               
-              {/* Right Column - Modern Unified Charts */}
-              <ModernUnifiedCharts
+              {/* Right Column - Unified Charts */}
+              <UnifiedCharts
                 transactions={currentMonthData.transactions}
                 categories={categories}
                 totalIncome={currentMonthData.totalIncome}
@@ -161,7 +161,7 @@ const FinanceDashboard = () => {
             
             {activeTab === 'charts' && (
               <div className="space-y-4">
-                <ModernUnifiedCharts
+                <UnifiedCharts
                   transactions={currentMonthData.transactions}
                   categories={categories}
                   totalIncome={currentMonthData.totalIncome}
