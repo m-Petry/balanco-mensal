@@ -465,7 +465,8 @@ const UnifiedCharts = ({
                       stroke="hsl(45, 93%, 47%)"
                       strokeWidth={2}
                       strokeDasharray="5 5"
-                      dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
+                      dot={false}
+                      activeDot={{ r: 4 }}
                       connectNulls={false}
                     />
                   </ComposedChart>
