@@ -53,7 +53,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
   }
 
   return (
-    <div className="w-full flex-1 px-2 sm:px-4 md:px-6 pt-0 pb-4 overflow-auto">
+    <div className="w-full flex-1 px-4 sm:px-6 md:px-8 pt-4 pb-4 overflow-auto">
       <Timeline
         position={isMobile ? 'right' : 'alternate'}
         sx={{
@@ -92,7 +92,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                 <TimelineConnector />
               </TimelineSeparator>
               <TimelineContent sx={{ py: { xs: 1, sm: '12px' }, px: { xs: 1, sm: 2, md: 3 } }}>
-                <Card className="w-full flex flex-col gap-2 sm:gap-3 hover:border-primary/30 transition-colors">
+                <Card className="w-full max-w-md mx-auto flex flex-col gap-2 sm:gap-3 hover:border-primary/30 transition-colors">
                   <CardHeader className="p-2 sm:p-4 md:p-5">
                     <CardTitle className="text-sm font-medium truncate">{transaction.description}</CardTitle>
                     {isMobile && (

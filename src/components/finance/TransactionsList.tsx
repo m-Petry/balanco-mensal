@@ -206,7 +206,7 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
-        <TabsContent value="list" className="flex flex-col flex-1 pb-0 mt-0">
+        <TabsContent value="list" className="flex flex-col flex-1 pb-0 mt-0 px-2 sm:px-4 md:px-6">
           <div className="flex justify-end mb-4">
             <Select
               value={sortOrder}
@@ -614,7 +614,7 @@ const TransactionsList = ({
             </>
           )}
         </TabsContent>
-        <TabsContent value="timeline" className="flex flex-col flex-1 pb-0 mt-0">
+        <TabsContent value="timeline" className="flex flex-col flex-1 pb-0 mt-0 px-2 sm:px-4 md:px-6">
           <TimelineChart 
             transactions={sortedTransactions} 
             categories={categories} 
