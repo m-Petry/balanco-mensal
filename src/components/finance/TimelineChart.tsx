@@ -53,14 +53,24 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
   }
 
   return (
-    <div className="w-full px-6 pt-2 pb-6 overflow-auto">
-      <Timeline position={isMobile ? 'right' : 'alternate'} sx={{ p: 0, m: 0, [`& .MuiTimelineItem-root:before`]: { flex: 0, padding: 0 } }}>
+    <div className="w-full flex-1 px-2 sm:px-4 md:px-6 pt-0 pb-4 overflow-auto">
+      <Timeline
+        position={isMobile ? 'right' : 'alternate'}
+        sx={{ p: 0, m: 0, [`& .MuiTimelineItem-root:before`]: { flex: 0, padding: 0 } }}
+      >
         {visibleTransactions.map((transaction, index) => {
           const isIncome = transaction.type === 'income';
           const category = getCategory(transaction.categoryId);
+          const itemMinHeight = isMobile ? 80 : 110;
 
           return (
-            <TimelineItem key={transaction.id} sx={{ minHeight: '110px' }}>
+            <TimelineItem
+              key={transaction.id}
+              sx={{
+                minHeight: index === 0 ? itemMinHeight / 2 : itemMinHeight,
+                mt: index === 0 ? 0 : undefined
+              }}
+            >
               {!isMobile && (
                 <TimelineOppositeContent
                   sx={{ m: 'auto 0' }}
@@ -72,33 +82,41 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                 </TimelineOppositeContent>
               )}
               <TimelineSeparator>
-                <TimelineConnector />
+                {index !== 0 && <TimelineConnector />}
                 <TimelineDot color={isIncome ? 'success' : 'error'}>
                   {isIncome ? <Plus className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
                 </TimelineDot>
-                <TimelineConnector />
+                {index !== visibleTransactions.length - 1 && <TimelineConnector />}
               </TimelineSeparator>
-              <TimelineContent sx={{ py: '12px', px: 2 }}>
-                <Card className='hover:border-primary/30 transition-colors'>
-                  <CardHeader className="p-3">
-                    <CardTitle className="text-sm font-medium truncate">{transaction.description}</CardTitle>
+              <TimelineContent sx={{ py: { xs: 1, sm: '12px' }, px: { xs: 0, sm: 2 } }}>
+                <Card className="w-full hover:border-primary/30 transition-colors">
+                  <CardHeader className="p-3 pb-0 sm:p-4 sm:pb-2 space-y-1">
+                    <CardTitle className="text-sm font-medium truncate">
+                      {transaction.description}
+                    </CardTitle>
                     {isMobile && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground">
                         {format(parseISO(transaction.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
                       </p>
                     )}
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
+                  <CardContent className="p-3 sm:p-4 pt-0 space-y-2">
                     {category && (
-                      <Badge variant="outline" className="mb-2" style={{ borderColor: category.color }}>
+                      <Badge
+                        variant="outline"
+                        className="w-fit"
+                        style={{ borderColor: category.color }}
+                      >
                         {category.name}
                       </Badge>
                     )}
-                    <p className={cn(
-                      "font-bold text-lg",
-                      isIncome ? 'text-income' : 'text-expense',
-                      !valuesVisible && 'blur-sm select-none'
-                    )}>
+                    <p
+                      className={cn(
+                        "font-bold text-lg",
+                        isIncome ? 'text-income' : 'text-expense',
+                        !valuesVisible && 'blur-sm select-none'
+                      )}
+                    >
                       {isIncome ? '+' : '-'} R$ {transaction.amount.toFixed(2).replace('.', ',')}
                     </p>
                   </CardContent>
