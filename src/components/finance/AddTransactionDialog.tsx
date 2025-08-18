@@ -41,6 +41,7 @@ const AddTransactionDialog = ({
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const { toast } = useToast();
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
   const filteredCategories = categories.filter(cat => cat.type === type);
 
@@ -144,6 +145,8 @@ const AddTransactionDialog = ({
               <Label>Categoria *</Label>
               {onAddCategory && onUpdateCategory && onDeleteCategory && (
                 <CategoryManagementDialog
+                  open={isCategoryDialogOpen}
+                  onOpenChange={setIsCategoryDialogOpen}
                   categories={categories}
                   onAddCategory={onAddCategory}
                   onUpdateCategory={onUpdateCategory}

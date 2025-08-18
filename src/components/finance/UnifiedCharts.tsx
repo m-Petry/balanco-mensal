@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, TrendingUp, PieChart as PieChartIcon, Target } from "lucide-react";
+import { BarChart, TrendingUp, PieChart as PieChartIcon, Target, BookOpenText } from "lucide-react";
 import ChartInfoButton from "./ChartInfoButton";
 import { formatCurrency } from "@/utils/currency";
 import { Transaction, Category } from "@/types/finance";
@@ -230,7 +230,7 @@ const UnifiedCharts = ({
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="income-expense" className="flex items-center gap-2 text-xs">
                 <BarChart className="w-3 h-3" />
-                Receitas vs Despesas
+                Visão Geral
               </TabsTrigger>
               <TabsTrigger value="distribution" className="flex items-center gap-2 text-xs">
                 <PieChartIcon className="w-3 h-3" />
@@ -397,6 +397,8 @@ const UnifiedCharts = ({
               </div>
             </CardContent>
           </TabsContent>
+
+
         </Tabs>
       </Card>
 
@@ -465,8 +467,7 @@ const UnifiedCharts = ({
                             );
                           }
                           return null;
-                        }}
-                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                        }}                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                       />
                       <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '12px', top: 0 }}/>
                       <Bar dataKey="actual" name="Gasto Real" fill="hsl(142, 76%, 36%)" barSize={10} radius={[4, 4, 0, 0]} />
