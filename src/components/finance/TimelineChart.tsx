@@ -53,16 +53,28 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
   }
 
   return (
-    <div className="w-full flex-1 px-2 sm:px-4 md:px-6 pt-0 pb-4 overflow-auto">
-      <Timeline
-        position={isMobile ? 'right' : 'alternate'}
-        sx={{
-          p: 0,
-          m: 0,
-          '& .MuiTimelineItem-root:first-of-type': { minHeight: 0, mt: 0 },
-          '& .MuiTimelineItem-root:before': { flex: 0, padding: 0 }
-        }}
-      >
+    <div className="w-full h-full flex flex-col">
+      <div className="flex-1 px-2 sm:px-3 md:px-4 overflow-auto">
+        <Timeline
+          position={isMobile ? 'right' : 'alternate'}
+          sx={{
+            p: 0,
+            m: 0,
+            mt: { xs: -1, sm: -0.5 },
+            '& .MuiTimelineItem-root': { 
+              minHeight: { xs: 'auto', sm: 'auto' },
+              mb: { xs: 1, sm: 1.5, md: 2 }
+            },
+            '& .MuiTimelineItem-root:first-of-type': { 
+              minHeight: 0, 
+              mt: { xs: -1, sm: -0.5 }
+            },
+            '& .MuiTimelineItem-root:before': { flex: 0, padding: 0 },
+            '& .MuiTimelineItem-root:last-child': {
+              mb: 0
+            }
+          }}
+        >
         {visibleTransactions.map(transaction => {
           const isIncome = transaction.type === 'income';
           const category = getCategory(transaction.categoryId);
@@ -71,7 +83,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
             <TimelineItem
               key={transaction.id}
               sx={{
-                minHeight: { xs: '80px', sm: '110px' }
+                minHeight: 'auto'
               }}
             >
               {!isMobile && (
@@ -91,21 +103,25 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                 </TimelineDot>
                 <TimelineConnector />
               </TimelineSeparator>
-              <TimelineContent sx={{ py: { xs: 1, sm: '12px' }, px: { xs: 1, sm: 2, md: 3 } }}>
-                <Card className="w-full flex flex-col gap-2 sm:gap-3 hover:border-primary/30 transition-colors">
-                  <CardHeader className="p-2 sm:p-4 md:p-5">
-                    <CardTitle className="text-sm font-medium truncate">{transaction.description}</CardTitle>
+              <TimelineContent sx={{ 
+                py: { xs: 0.5, sm: 1 }, 
+                px: { xs: 0.5, sm: 1, md: 2 },
+                minWidth: { xs: '200px', sm: '280px', md: '320px' }
+              }}>
+                <Card className="w-full hover:border-primary/30 transition-colors shadow-sm">
+                  <CardHeader className="pb-2 px-3 pt-3 sm:pb-3 sm:px-4 sm:pt-4">
+                    <CardTitle className="text-sm sm:text-base font-medium leading-tight">{transaction.description}</CardTitle>
                     {isMobile && (
                       <p className="text-xs text-muted-foreground mt-1">
                         {format(parseISO(transaction.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
                       </p>
                     )}
                   </CardHeader>
-                  <CardContent className="p-2 sm:p-4 md:p-5 space-y-2">
+                  <CardContent className="px-3 pb-3 pt-0 sm:px-4 sm:pb-4 space-y-2">
                     {category && (
                       <Badge
                         variant="outline"
-                        className="w-fit"
+                        className="w-fit text-xs"
                         style={{ borderColor: category.color }}
                       >
                         {category.name}
@@ -113,7 +129,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                     )}
                     <p
                       className={cn(
-                        "font-bold text-lg",
+                        "font-bold text-base sm:text-lg",
                         isIncome ? 'text-income' : 'text-expense',
                         !valuesVisible && 'blur-sm select-none'
                       )}
@@ -126,16 +142,17 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
             </TimelineItem>
           );
         })}
-      </Timeline>
+        </Timeline>
+      </div>
       
       {(hasMore || isExpanded) && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center py-3 px-2 sm:px-3 md:px-4 border-t border-border/50">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleToggleExpand}
             disabled={isAnimating}
-            className="text-sm font-medium text-primary hover:text-primary/80"
+            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
           >
             {isExpanded ? (
               <>

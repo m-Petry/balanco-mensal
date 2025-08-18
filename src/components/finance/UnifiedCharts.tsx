@@ -198,17 +198,14 @@ const UnifiedCharts = ({
   const pieContainerRef = useRef<HTMLDivElement>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>();
 
-  const handlePieMouseMove = (
-    _: unknown,
-    __: number,
-    e: { chartX: number; chartY: number }
-  ) => {
-    const { chartX, chartY } = e;
+  const handlePieMouseMove = (event: React.MouseEvent<SVGElement>) => {
     if (!pieContainerRef.current) return;
     const rect = pieContainerRef.current.getBoundingClientRect();
     const cx = rect.width / 2;
     const cy = rect.height / 2;
     const outerRadius = 80;
+    const chartX = event.nativeEvent.offsetX;
+    const chartY = event.nativeEvent.offsetY;
     const dx = chartX - cx;
     const dy = chartY - cy;
     const angle = Math.atan2(dy, dx);
