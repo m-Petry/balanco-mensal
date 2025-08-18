@@ -198,14 +198,15 @@ const UnifiedCharts = ({
   const pieContainerRef = useRef<HTMLDivElement>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>();
 
-  const handlePieMouseMove = (_: unknown, __: number, e: { chartX: number; chartY: number }) => {
+  const handlePieMouseMove = (_: unknown, __: number, e: React.MouseEvent) => {
+    const { chartX, chartY } = e as any;
     if (!pieContainerRef.current) return;
     const rect = pieContainerRef.current.getBoundingClientRect();
     const cx = rect.width / 2;
     const cy = rect.height / 2;
     const outerRadius = 80;
-    const dx = e.chartX - cx;
-    const dy = e.chartY - cy;
+    const dx = chartX - cx;
+    const dy = chartY - cy;
     const angle = Math.atan2(dy, dx);
     const offset = 12;
     const x = cx + Math.cos(angle) * (outerRadius + offset);
@@ -295,7 +296,7 @@ const UnifiedCharts = ({
                           content={(props: LabelProps) => {
                             const { value, viewBox } = props;
                             if (!viewBox) return null;
-                            const { x, y, width } = viewBox;
+                            const { x, y, width } = viewBox as { x: number; y: number; width: number };
                             return (
                               <text
                                 x={x + width / 2}
@@ -429,9 +430,9 @@ const UnifiedCharts = ({
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={dailyData} margin={{ top: 20, right: 10, left: 10, bottom: 10 }}>
                       <defs>
-                        <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        <linearGradient id="colorCumulative" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.05}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
@@ -468,12 +469,12 @@ const UnifiedCharts = ({
                         wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
                       />
                       <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '12px', top: 0 }}/>
-                      <Bar dataKey="actual" name="Gasto Real" fill="hsl(var(--primary))" barSize={10} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="actual" name="Gasto Real" fill="hsl(142, 76%, 36%)" barSize={10} radius={[4, 4, 0, 0]} />
                       <Line 
                         type="monotone" 
                         dataKey="projected" 
                         name="Projeção de Gasto"
-                        stroke="hsl(var(--primary))" 
+                        stroke="hsl(45, 93%, 47%)" 
                         strokeWidth={2} 
                         strokeDasharray="5 5" 
                         dot={false}
@@ -483,9 +484,9 @@ const UnifiedCharts = ({
                         type="monotone" 
                         dataKey="cumulative" 
                         name="Gasto Acumulado" 
-                        fill="url(#colorActual)" 
-                        stroke="hsl(var(--primary))" 
-                        strokeWidth={1}
+                        fill="url(#colorCumulative)" 
+                        stroke="hsl(217, 91%, 60%)" 
+                        strokeWidth={2}
                         connectNulls
                       />
                     </ComposedChart>
