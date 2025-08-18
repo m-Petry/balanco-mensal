@@ -3,14 +3,12 @@ import { useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import PasswordLock from "@/components/auth/PasswordLock";
 import Header from "@/components/layout/Header";
-import MobileNavigation from "@/components/layout/MobileNavigation";
 import FinancialSummary from "@/components/finance/FinancialSummary";
 import UnifiedCharts from "@/components/finance/UnifiedCharts";
 import TransactionsList from "@/components/finance/TransactionsList";
-import PreviousBalancePrompt from "@/components/finance/PreviousBalancePrompt";
 import { useFinanceData } from "@/hooks/useFinanceData";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
-import { Button } from "@/components/ui/button";
+import CategoryManagementDialog from "@/components/finance/CategoryManagementDialog";
 import { ModernNavigation } from "@/components/ui/modern-navigation";
 import { Plus, Home, CreditCard, TrendingUp, Settings } from "lucide-react";
 
@@ -202,8 +200,10 @@ const FinanceDashboard = () => {
           activeItem={activeTab}
           onItemClick={(item) => {
             if (item.id === 'settings') {
-              // Toggle values visibility for settings
-              toggleValuesVisibility();
+              const manageBtn = document.querySelector('[data-manage-categories]');
+              if (manageBtn) {
+                (manageBtn as HTMLButtonElement).click();
+              }
             } else {
               setActiveTab(item.id as 'summary' | 'transactions' | 'charts');
             }
@@ -237,6 +237,20 @@ const FinanceDashboard = () => {
               className="hidden"
             >
               Add Transaction
+            </button>
+          }
+        />
+        <CategoryManagementDialog
+          categories={categories}
+          onAddCategory={addCategory}
+          onUpdateCategory={updateCategory}
+          onDeleteCategory={deleteCategory}
+          trigger={
+            <button
+              data-manage-categories
+              className="hidden"
+            >
+              Manage Categories
             </button>
           }
         />

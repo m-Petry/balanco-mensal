@@ -14,7 +14,6 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
-  ReferenceLine,
   Tooltip,
   ComposedChart,
   Legend,
@@ -293,34 +292,34 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="day" 
+                    <XAxis
+                      dataKey="day"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={10}
                       tickFormatter={(value) => `${value.toFixed(0)}`}
                       width={35}
                     />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '6px',
                         fontSize: '12px'
                       }}
                     />
-                    
-                    <ReferenceLine 
-                      y={dailyAverage} 
-                      stroke="hsl(217, 91%, 60%)" 
-                      strokeDasharray="5 5"
-                      strokeWidth={1}
+                    <Legend
+                      verticalAlign="top"
+                      align="left"
+                      height={32}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
                     />
-                    
+
                     <Line
                       name="Gastos Reais"
                       type="monotone"
@@ -339,7 +338,18 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
                       strokeDasharray="4 4"
                       dot={false}
                       activeDot={{ r: 4 }}
+                      strokeLinecap="round"
                       connectNulls={false}
+                    />
+                    <Line
+                      name="Média Diária"
+                      type="monotone"
+                      dataKey="average"
+                      stroke="hsl(217, 91%, 60%)"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={false}
+                      strokeLinecap="round"
                     />
                   </LineChart>
                 </ResponsiveContainer>

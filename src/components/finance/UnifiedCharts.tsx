@@ -19,7 +19,6 @@ import {
   Cell,
   Area,
   Line,
-  ReferenceLine,
   Tooltip,
   LabelList,
   ComposedChart,
@@ -137,6 +136,7 @@ const UnifiedCharts = ({
         day,
         actual: day <= currentDay ? dayExpenses : null,
         projected: day > currentDay ? dailyAverage : null,
+        average: dailyAverage,
       });
     }
 
@@ -446,12 +446,12 @@ const UnifiedCharts = ({
                         fontSize: '12px'
                       }}
                     />
-
-                    <ReferenceLine
-                      y={dailyAverage}
-                      stroke="hsl(217, 91%, 60%)"
-                      strokeDasharray="5 5"
-                      strokeWidth={1}
+                    <Legend
+                      verticalAlign="top"
+                      align="left"
+                      height={32}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
                     />
 
                     <Area
@@ -471,8 +471,19 @@ const UnifiedCharts = ({
                       strokeWidth={2}
                       strokeDasharray="4 4"
                       dot={false}
+                      strokeLinecap="round"
                       activeDot={{ r: 4 }}
                       connectNulls={false}
+                    />
+                    <Line
+                      name="Média Diária"
+                      type="monotone"
+                      dataKey="average"
+                      stroke="hsl(217, 91%, 60%)"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={false}
+                      strokeLinecap="round"
                     />
                   </ComposedChart>
                 </ResponsiveContainer>
