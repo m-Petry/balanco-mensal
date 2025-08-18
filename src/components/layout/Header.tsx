@@ -160,16 +160,18 @@ const Header = ({
         </div>
 
         {/* Desktop Layout - Hidden on Mobile */}
-        <div className="hidden sm:flex items-center justify-between">
+        <div className="hidden sm:grid sm:grid-cols-3 sm:items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3" title="Início">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <PiggyBank className="w-6 h-6 text-primary-foreground" />
-            </div>
-          </Link>
+          <div className="flex justify-start">
+            <Link to="/" className="flex items-center gap-3" title="Início">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <PiggyBank className="w-6 h-6 text-primary-foreground" />
+              </div>
+            </Link>
+          </div>
 
           {/* Month Navigation */}
-          <div className="flex items-center gap-2">
+          <div className="flex justify-center items-center gap-2">
             <Button
               variant="outline"
               size="icon"
@@ -184,7 +186,7 @@ const Header = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    "min-w-[150px] justify-start text-left font-normal",
+                    "min-w-[150px] justify-center text-left font-normal",
                     "hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
@@ -192,8 +194,8 @@ const Header = ({
                   {format(selectedDate, "MMMM yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())}
                 </Button>
               </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="center">
-                                <Calendar
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleCalendarSelect}
@@ -214,7 +216,7 @@ const Header = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex justify-end items-center gap-2">
             <div className="hidden lg:block">
               <AddTransactionDialog
                 categories={categories}
