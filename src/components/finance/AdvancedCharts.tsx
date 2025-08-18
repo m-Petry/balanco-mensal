@@ -16,6 +16,8 @@ import {
   Line,
   ReferenceLine,
   Tooltip,
+  ComposedChart,
+  Legend,
 } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -144,8 +146,14 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
             <CardContent className="pt-0">
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={sixMonthData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <ComposedChart data={sixMonthData} margin={{ top: 20, right: 10, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="saldoGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis
                       dataKey="month"
                       stroke="hsl(var(--muted-foreground))"
@@ -168,29 +176,35 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
                         fontSize: '12px'
                       }}
                     />
-
+                    <Legend
+                      verticalAlign="top"
+                      align="left"
+                      height={32}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
                     <Line
-                      type="linear"
+                      type="monotone"
                       dataKey="receitas"
                       stroke="hsl(142, 76%, 36%)"
                       strokeWidth={2}
                       dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(142, 76%, 36%)' }}
                     />
                     <Line
-                      type="linear"
+                      type="monotone"
                       dataKey="despesas"
                       stroke="hsl(0, 84%, 60%)"
                       strokeWidth={2}
                       dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(0, 84%, 60%)' }}
                     />
-                    <Line
-                      type="linear"
+                    <Area
+                      type="monotone"
                       dataKey="saldo"
                       stroke="hsl(217, 91%, 60%)"
+                      fill="url(#saldoGradient)"
                       strokeWidth={2}
-                      dot={{ r: 3, strokeWidth: 2, stroke: 'hsl(217, 91%, 60%)' }}
                     />
-                  </LineChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
