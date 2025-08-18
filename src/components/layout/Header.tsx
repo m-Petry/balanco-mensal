@@ -1,10 +1,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import NativeMonthPicker from "@/components/ui/native-month-picker";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Link } from "react-router-dom";
-import { CalendarIcon, ChevronLeft, ChevronRight, Wallet, Lock, Eye, EyeOff, Settings } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, PiggyBank, Lock, Eye, EyeOff, Settings, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -44,12 +44,6 @@ const Header = ({
   const monthName = format(currentDateObj, "MMMM yyyy", { locale: ptBR });
   const capitalizedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-  const handleCalendarSelect = (date: Date | undefined) => {
-    if (date) {
-      onSetMonth(date.getFullYear(), date.getMonth() + 1);
-    }
-  };
-
   const handleLock = () => {
     if (onLock) {
       onLock();
@@ -63,11 +57,10 @@ const Header = ({
         <div className="flex flex-col gap-2 sm:hidden">
           {/* Top Row - Logo and Essential Actions */}
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2" title="Início">
               <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
-                <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
+                <PiggyBank className="w-4 h-4 text-primary-foreground" />
               </div>
-              <h1 className="text-base font-semibold text-foreground">Finanças</h1>
             </Link>
             <div className="flex items-center gap-1">
               <Button
@@ -119,13 +112,10 @@ const Header = ({
                     <span className="truncate">{format(currentDateObj, "MMM/yy", { locale: ptBR })}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center">
-                  <Calendar
-                    mode="single"
-                    selected={currentDateObj}
-                    onSelect={handleCalendarSelect}
-                    initialFocus
-                    className="pointer-events-auto"
+                <PopoverContent className="w-[260px] p-3" align="center">
+                  <NativeMonthPicker
+                    value={currentDateObj}
+                    onChange={(date) => onSetMonth(date.getFullYear(), date.getMonth() + 1)}
                   />
                 </PopoverContent>
               </Popover>
@@ -152,11 +142,10 @@ const Header = ({
         {/* Desktop Layout - Hidden on Mobile */}
         <div className="hidden sm:flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3" title="Início">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-primary-foreground" />
+              <PiggyBank className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Finanças Pessoais</h1>
           </Link>
 
           {/* Month Navigation */}
@@ -183,13 +172,10 @@ const Header = ({
                   {capitalizedMonthName}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="center">
-                <Calendar
-                  mode="single"
-                  selected={currentDateObj}
-                  onSelect={handleCalendarSelect}
-                  initialFocus
-                  className="pointer-events-auto"
+              <PopoverContent className="w-[280px] p-3" align="center">
+                <NativeMonthPicker
+                  value={currentDateObj}
+                  onChange={(date) => onSetMonth(date.getFullYear(), date.getMonth() + 1)}
                 />
               </PopoverContent>
             </Popover>
@@ -206,13 +192,29 @@ const Header = ({
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <AddTransactionDialog
-              categories={categories}
-              onAddTransaction={onAddTransaction}
-              onAddCategory={onAddCategory}
-              onUpdateCategory={onUpdateCategory}
-              onDeleteCategory={onDeleteCategory}
-            />
+            <div className="hidden lg:block">
+              <AddTransactionDialog
+                categories={categories}
+                onAddTransaction={onAddTransaction}
+                onAddCategory={onAddCategory}
+                onUpdateCategory={onUpdateCategory}
+                onDeleteCategory={onDeleteCategory}
+              />
+            </div>
+            <div className="block lg:hidden">
+              <AddTransactionDialog
+                categories={categories}
+                onAddTransaction={onAddTransaction}
+                onAddCategory={onAddCategory}
+                onUpdateCategory={onUpdateCategory}
+                onDeleteCategory={onDeleteCategory}
+                trigger={
+                  <Button variant="outline" size="icon" className="h-9 w-9" title="Adicionar Transação">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                }
+              />
+            </div>
             <Button variant="outline" size="icon" onClick={onOpenCategoryManager} className="h-9 w-9" title="Gerenciar Categorias">
               <Settings className="h-4 w-4" />
             </Button>

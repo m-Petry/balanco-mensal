@@ -71,6 +71,17 @@ const ModernNavigation = React.forwardRef<HTMLDivElement, ModernNavigationProps>
       >
         <div className="relative h-full">
           {/* Navigation Items */}
+          {fab && (
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10">
+              <button
+                onClick={fab.onClick}
+                className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 active:scale-95"
+                title={fab.label}
+              >
+                {fab.icon}
+              </button>
+            </div>
+          )}
           <div className={cn(
             "flex items-center justify-around h-full px-4",
             centered && "justify-center gap-8"
@@ -83,15 +94,7 @@ const ModernNavigation = React.forwardRef<HTMLDivElement, ModernNavigationProps>
                 <React.Fragment key={item.id}>
                   {/* FAB in center if specified */}
                   {isFabPosition && fab && (
-                    <div className="relative">
-                      <button
-                        onClick={fab.onClick}
-                        className="flex items-center justify-center w-16 h-16 -mt-8 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 active:scale-95"
-                        title={fab.label}
-                      >
-                        {fab.icon}
-                      </button>
-                    </div>
+                    <div className="w-16 h-16" /> // Placeholder to maintain spacing
                   )}
                   
                   {/* Navigation Item */}
@@ -115,7 +118,7 @@ const ModernNavigation = React.forwardRef<HTMLDivElement, ModernNavigationProps>
                       
                       {/* Badge */}
                       {item.badge && item.badge > 0 && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                           {item.badge > 99 ? "99+" : item.badge}
                         </div>
                       )}
