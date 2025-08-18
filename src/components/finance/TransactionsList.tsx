@@ -347,16 +347,18 @@ const TransactionsList = ({
           ) : (
             <>
               {/* Lista ocupa o espaço e empurra os controles para baixo */}
-              <div className={cn(
-                "space-y-3 flex-1 transition-all duration-300 ease-in-out",
+              <div
+                className={cn(
+                "flex-1 space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out",
                 isAnimating && "opacity-75 scale-[0.99]"
-              )}>
+              )}
+                >
                 {visibleTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
                     className={cn(
-                      "p-4 border rounded-lg hover:bg-muted/50 transition-all duration-200 ease-out",
-                      "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                      "p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-all duration-200 ease-out",
+                      "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4",
                       "hover:shadow-sm hover:border-primary/20",
                       !showAll && index >= INITIAL_VISIBLE_COUNT ? 
                         "animate-in fade-in-0 slide-in-from-top-2 duration-300" : 
