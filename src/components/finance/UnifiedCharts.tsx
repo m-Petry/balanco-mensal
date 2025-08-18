@@ -19,7 +19,6 @@ import {
   Cell,
   Area,
   Line,
-  ReferenceLine,
   Tooltip,
   LabelList,
   ComposedChart,
@@ -442,13 +441,6 @@ const UnifiedCharts = ({
                       }}
                     />
 
-                    <ReferenceLine
-                      y={dailyAverage}
-                      stroke="hsl(217, 91%, 60%)"
-                      strokeDasharray="5 5"
-                      strokeWidth={1}
-                    />
-
                     <Area
                       name="Gastos Reais"
                       type="monotone"
@@ -464,8 +456,9 @@ const UnifiedCharts = ({
                       dataKey="projected"
                       stroke="hsl(45, 93%, 47%)"
                       strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
+                      strokeDasharray="4 4"
+                      dot={false}
+                      activeDot={false}
                       connectNulls={false}
                     />
                   </ComposedChart>

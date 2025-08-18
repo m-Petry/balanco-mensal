@@ -14,7 +14,6 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
-  ReferenceLine,
   Tooltip,
   ComposedChart,
   Legend,
@@ -314,13 +313,6 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
                       }}
                     />
                     
-                    <ReferenceLine 
-                      y={dailyAverage} 
-                      stroke="hsl(217, 91%, 60%)" 
-                      strokeDasharray="5 5"
-                      strokeWidth={1}
-                    />
-                    
                     <Line
                       name="Gastos Reais"
                       type="monotone"
@@ -336,8 +328,9 @@ const AdvancedCharts = ({ transactions, categories, currentDate }: AdvancedChart
                       dataKey="projected"
                       stroke="hsl(45, 93%, 47%)"
                       strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={{ fill: "hsl(45, 93%, 47%)", r: 3 }}
+                      strokeDasharray="4 4"
+                      dot={false}
+                      activeDot={false}
                       connectNulls={false}
                     />
                   </LineChart>
