@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import NativeMonthPicker from "@/components/ui/native-month-picker";
+import * as React from "react";
+import { Calendar } from "@/components/ui/calendar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Link } from "react-router-dom";
 import { CalendarIcon, ChevronLeft, ChevronRight, PiggyBank, Lock, Eye, EyeOff, Settings, Plus } from "lucide-react";
@@ -40,9 +41,25 @@ const Header = ({
   onToggleValues,
   onOpenCategoryManager
 }: HeaderProps) => {
-  const currentDateObj = new Date(currentDate.year, currentDate.month - 1);
-  const monthName = format(currentDateObj, "MMMM yyyy", { locale: ptBR });
-  const capitalizedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  const [selectedDate, setSelectedDate] = React.useState(new Date(currentDate.year, currentDate.month - 1, 1));
+
+  React.useEffect(() => {
+    // When the month/year context changes (e.g., via arrow buttons), update the local selected date
+    // to the first day of the new month to keep the calendar view consistent.
+    setSelectedDate(new Date(currentDate.year, currentDate.month - 1, 1));
+  }, [currentDate]);
+
+
+  const handleCalendarSelect = (date: Date | undefined) => {
+    if (date) {
+      // Update the local state to show the selected day in the calendar
+      setSelectedDate(date);
+      // If the month or year is different, update the global context
+      if (date.getFullYear() !== currentDate.year || date.getMonth() + 1 !== currentDate.month) {
+        onSetMonth(date.getFullYear(), date.getMonth() + 1);
+      }
+    }
+  };
 
   const handleLock = () => {
     if (onLock) {
@@ -109,13 +126,16 @@ const Header = ({
                     className="text-xs px-2 h-7 flex-1 min-w-0 justify-center"
                   >
                     <CalendarIcon className="mr-1 h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">{format(currentDateObj, "MMM/yy", { locale: ptBR })}</span>
+                    <span className="truncate">{format(selectedDate, "MMM/yy", { locale: ptBR })}</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[260px] p-3" align="center">
-                  <NativeMonthPicker
-                    value={currentDateObj}
-                    onChange={(date) => onSetMonth(date.getFullYear(), date.getMonth() + 1)}
+                                <PopoverContent className="w-auto p-0" align="center">
+                                    <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleCalendarSelect}
+                    initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -169,13 +189,16 @@ const Header = ({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {capitalizedMonthName}
+                  {format(selectedDate, "MMMM yyyy", { locale: ptBR }).replace(/^./, (c) => c.toUpperCase())}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-3" align="center">
-                <NativeMonthPicker
-                  value={currentDateObj}
-                  onChange={(date) => onSetMonth(date.getFullYear(), date.getMonth() + 1)}
+                            <PopoverContent className="w-auto p-0" align="center">
+                                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleCalendarSelect}
+                  initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
