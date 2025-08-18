@@ -113,31 +113,41 @@ const UnifiedCharts = ({
   // Generate daily spending projection for current month
   const generateDailyProjection = () => {
     const daysInMonth = getDaysInMonth(dateObj);
-    const currentDay = new Date().getDate();
+    const today = new Date();
+    const currentDay = dateObj.getMonth() === today.getMonth() && dateObj.getFullYear() === today.getFullYear() ? today.getDate() : daysInMonth;
+
     const monthKey = format(dateObj, 'yyyy-MM');
 
-    const monthTransactions = allTransactions.filter(t => t.date.startsWith(monthKey));
-    const totalExpenses = monthTransactions
-      .filter(t => t.type === 'expense')
+    const monthTransactions = allTransactions.filter(t => t.date.startsWith(monthKey) && t.type === 'expense');
+    
+    const expensesUpToCurrentDay = monthTransactions
+      .filter(t => new Date(t.date).getDate() <= currentDay)
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const dailyAverage = currentDay > 0 ? totalExpenses / currentDay : 0;
+    const dailyAverage = currentDay > 0 ? expensesUpToCurrentDay / currentDay : 0;
     const projectedTotal = dailyAverage * daysInMonth;
 
-    const dailyData = [];
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dayTransactions = monthTransactions.filter(t => {
-        const transactionDay = new Date(t.date).getDate();
-        return transactionDay === day && t.type === 'expense';
-      });
+    let cumulativeActual = 0;
+    const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const dayExpenses = monthTransactions
+        .filter(t => new Date(t.date).getDate() === day)
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      if (day <= currentDay) {
+        cumulativeActual += dayExpenses;
+      }
 
-      const dayExpenses = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
-
-      dailyData.push({
-        day,
+      return {
+        day: `Dia ${day}`,
         actual: day <= currentDay ? dayExpenses : null,
-        projected: day > currentDay ? dailyAverage : null,
-      });
+        projected: day >= currentDay ? dailyAverage : null,
+        cumulative: day <= currentDay ? cumulativeActual : null,
+      };
+    });
+    
+    if (currentDay > 0 && currentDay <= daysInMonth) {
+      dailyData[currentDay - 1].projected = dailyData[currentDay - 1].actual;
     }
 
     return { dailyData, dailyAverage, projectedTotal };
@@ -412,71 +422,75 @@ const UnifiedCharts = ({
                   <ChartInfoButton chartType="projection" />
                 </div>
                 <div className={`text-sm text-muted-foreground mb-4 space-y-1 ${!valuesVisible ? 'blur-sm select-none' : ''}`}>
-                  <p>Média diária: {formatCurrency(dailyAverage)}</p>
-                  <p>Projeção mês: {formatCurrency(projectedTotal)}</p>
+                  <p>Média diária de gastos: <span className="font-semibold text-primary">{formatCurrency(dailyAverage)}</span></p>
+                  <p>Projeção de gastos para o mês: <span className="font-semibold text-primary">{formatCurrency(projectedTotal)}</span></p>
                 </div>
-              <div className="h-[240px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={dailyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                    <defs>
-                      <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.1} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="day"
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                    />
-                    <YAxis
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={10}
-                      tickFormatter={(value) => `${value.toFixed(0)}`}
-                      width={35}
-                    />
-                    <Tooltip
-                      formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]}
-                      wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px',
-                        fontSize: '12px'
-                      }}
-                    />
-
-                    <ReferenceLine
-                      y={dailyAverage}
-                      stroke="hsl(217, 91%, 60%)"
-                      strokeDasharray="5 5"
-                      strokeWidth={1}
-                    />
-
-                    <Area
-                      name="Gastos Reais"
-                      type="monotone"
-                      dataKey="actual"
-                      stroke="hsl(142, 76%, 36%)"
-                      fill="url(#actualGradient)"
-                      strokeWidth={2}
-                      connectNulls={false}
-                    />
-                    <Line
-                      name="Projeção"
-                      type="monotone"
-                      dataKey="projected"
-                      stroke="hsl(45, 93%, 47%)"
-                      strokeWidth={2}
-                      strokeDasharray="4 4"
-                      dot={false}
-                      activeDot={{ r: 4 }}
-                      connectNulls={false}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
+                <div className="h-[280px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={dailyData} margin={{ top: 20, right: 10, left: 10, bottom: 10 }}>
+                      <defs>
+                        <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis 
+                        dataKey="day" 
+                        stroke="hsl(var(--muted-foreground))" 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false}
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))" 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tickFormatter={(value) => `${formatCurrency(value)}`}
+                      />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="rounded-lg border bg-background p-2 shadow-sm text-xs">
+                                <div className="font-bold">{label}</div>
+                                {payload.map(p => (
+                                  <div key={p.name} style={{ color: p.color }}>
+                                    {`${p.name}: ${formatCurrency(p.value as number)}`}
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                        wrapperStyle={{ filter: valuesVisible ? 'none' : 'blur(4px)' }}
+                      />
+                      <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '12px', top: 0 }}/>
+                      <Bar dataKey="actual" name="Gasto Real" fill="hsl(var(--primary))" barSize={10} radius={[4, 4, 0, 0]} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="projected" 
+                        name="Projeção de Gasto"
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2} 
+                        strokeDasharray="5 5" 
+                        dot={false}
+                        connectNulls
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="cumulative" 
+                        name="Gasto Acumulado" 
+                        fill="url(#colorActual)" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={1}
+                        connectNulls
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </CardContent>
           </TabsContent>

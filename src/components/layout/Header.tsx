@@ -3,12 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock, Eye, EyeOff } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, DollarSign, Lock, Eye, EyeOff, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
-import CategoryManagementDialog from "@/components/finance/CategoryManagementDialog";
 import { Category, Transaction } from "@/types/finance";
 
 interface HeaderProps {
@@ -23,6 +22,7 @@ interface HeaderProps {
   onLock?: () => void;
   valuesVisible: boolean;
   onToggleValues: () => void;
+  onOpenCategoryManager: () => void;
 }
 
 const Header = ({ 
@@ -36,7 +36,8 @@ const Header = ({
   onDeleteCategory,
   onLock,
   valuesVisible,
-  onToggleValues
+  onToggleValues,
+  onOpenCategoryManager
 }: HeaderProps) => {
   const currentDateObj = new Date(currentDate.year, currentDate.month - 1);
   const monthName = format(currentDateObj, "MMMM yyyy", { locale: ptBR });
@@ -140,12 +141,9 @@ const Header = ({
             
             {/* Action Buttons */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              <CategoryManagementDialog
-                categories={categories}
-                onAddCategory={onAddCategory}
-                onUpdateCategory={onUpdateCategory}
-                onDeleteCategory={onDeleteCategory}
-              />
+              <Button variant="outline" size="icon" onClick={onOpenCategoryManager} className="h-7 w-7">
+                <Settings className="w-3.5 h-3.5" />
+              </Button>
             </div>
           </div>
         </div>
@@ -214,12 +212,10 @@ const Header = ({
               onUpdateCategory={onUpdateCategory}
               onDeleteCategory={onDeleteCategory}
             />
-            <CategoryManagementDialog
-              categories={categories}
-              onAddCategory={onAddCategory}
-              onUpdateCategory={onUpdateCategory}
-              onDeleteCategory={onDeleteCategory}
-            />
+            <Button variant="outline" onClick={onOpenCategoryManager}>
+              <Settings className="mr-2 h-4 w-4" />
+              Gerenciar Categorias
+            </Button>
             <Button
               variant="outline"
               size="icon"

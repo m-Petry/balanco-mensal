@@ -25,6 +25,8 @@ import { Category } from "@/types/finance";
 import { useToast } from "@/hooks/use-toast";
 
 interface CategoryManagementDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   categories: Category[];
   onAddCategory: (category: Omit<Category, 'id'>) => void;
   onUpdateCategory: (id: string, updates: Partial<Category>) => void;
@@ -50,12 +52,13 @@ const initialColors = [
 ];
 
 const CategoryManagementDialog = ({
+  open,
+  onOpenChange,
   categories,
   onAddCategory,
   onUpdateCategory,
   onDeleteCategory,
 }: CategoryManagementDialogProps) => {
-  const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [availableColors, setAvailableColors] = useState(initialColors);
   const [customColor, setCustomColor] = useState("#000000");
@@ -119,12 +122,7 @@ const CategoryManagementDialog = ({
   const expenseCategories = categories.filter(cat => cat.type === 'expense');
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Settings className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Gerenciar Categorias</DialogTitle>

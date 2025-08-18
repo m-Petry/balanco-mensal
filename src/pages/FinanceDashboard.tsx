@@ -12,12 +12,14 @@ import { useFinanceData } from "@/hooks/useFinanceData";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
 import { Button } from "@/components/ui/button";
 import { ModernNavigation } from "@/components/ui/modern-navigation";
+import CategoryManagementDialog from "@/components/finance/CategoryManagementDialog";
 import { Plus, Home, CreditCard, TrendingUp, Settings } from "lucide-react";
 
 const FinanceDashboard = () => {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'transactions' | 'charts'>('summary');
   const [valuesVisible, setValuesVisible] = useState(false);
+  const [isCategoryManagerOpen, setCategoryManagerOpen] = useState(false);
   
   const {
     categories,
@@ -92,6 +94,7 @@ const FinanceDashboard = () => {
           onLock={handleLock}
           valuesVisible={valuesVisible}
           onToggleValues={toggleValuesVisibility}
+          onOpenCategoryManager={() => setCategoryManagerOpen(true)}
         />
         
         <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
@@ -202,8 +205,7 @@ const FinanceDashboard = () => {
           activeItem={activeTab}
           onItemClick={(item) => {
             if (item.id === 'settings') {
-              // Toggle values visibility for settings
-              toggleValuesVisibility();
+              setCategoryManagerOpen(true);
             } else {
               setActiveTab(item.id as 'summary' | 'transactions' | 'charts');
             }
@@ -222,6 +224,15 @@ const FinanceDashboard = () => {
             label: 'Nova Transação',
           }}
           className="sm:hidden"
+        />
+
+        <CategoryManagementDialog
+          open={isCategoryManagerOpen}
+          onOpenChange={setCategoryManagerOpen}
+          categories={categories}
+          onAddCategory={addCategory}
+          onUpdateCategory={updateCategory}
+          onDeleteCategory={deleteCategory}
         />
 
         {/* Hidden Add Transaction Dialog Trigger */}
