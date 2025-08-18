@@ -202,8 +202,8 @@ const FinanceDashboard = () => {
           activeItem={activeTab}
           onItemClick={(item) => {
             if (item.id === 'settings') {
-              // Toggle values visibility for settings
-              toggleValuesVisibility();
+              const categoryButton = document.querySelector('[data-category-management]') as HTMLButtonElement | null;
+              categoryButton?.click();
             } else {
               setActiveTab(item.id as 'summary' | 'transactions' | 'charts');
             }

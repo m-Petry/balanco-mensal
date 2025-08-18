@@ -136,7 +136,7 @@ const UnifiedCharts = ({
       dailyData.push({
         day,
         actual: day <= currentDay ? dayExpenses : null,
-        projected: day > currentDay ? dailyAverage : null,
+        projected: dailyAverage,
       });
     }
 
@@ -446,12 +446,20 @@ const UnifiedCharts = ({
                         fontSize: '12px'
                       }}
                     />
+                    <Legend
+                      verticalAlign="top"
+                      align="left"
+                      height={32}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
 
                     <ReferenceLine
                       y={dailyAverage}
                       stroke="hsl(217, 91%, 60%)"
                       strokeDasharray="5 5"
                       strokeWidth={1}
+                      label={{ value: 'Média diária', position: 'insideTopLeft', fontSize: 10, fill: 'hsl(217,91%,60%)' }}
                     />
 
                     <Area
@@ -462,6 +470,8 @@ const UnifiedCharts = ({
                       fill="url(#actualGradient)"
                       strokeWidth={2}
                       connectNulls={false}
+                      dot={{ r: 2 }}
+                      activeDot={{ r: 4 }}
                     />
                     <Line
                       name="Projeção"

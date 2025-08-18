@@ -121,7 +121,7 @@ const CategoryManagementDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" data-category-management>
           <Settings className="w-4 h-4" />
         </Button>
       </DialogTrigger>
