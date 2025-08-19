@@ -598,7 +598,7 @@ const TransactionsList = ({
 
                 {/* Controles de expansão minimalistas */}
                 {(hasMore || showAll) && (
-                  <div className="flex justify-center pt-4 mt-4 border-t">
+                  <div className="flex justify-center items-center pt-3 pb-2 mt-4 border-t">
                     {showAll ? (
                       <Button
                         variant="ghost"

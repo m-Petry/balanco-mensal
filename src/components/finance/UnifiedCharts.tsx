@@ -195,29 +195,6 @@ const UnifiedCharts = ({
     );
   };
 
-  const pieContainerRef = useRef<HTMLDivElement>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>();
-
-  const handlePieMouseMove = (event: React.MouseEvent<SVGElement>) => {
-    if (!pieContainerRef.current) return;
-    const rect = pieContainerRef.current.getBoundingClientRect();
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const outerRadius = 80;
-    const chartX = event.nativeEvent.offsetX;
-    const chartY = event.nativeEvent.offsetY;
-    const dx = chartX - cx;
-    const dy = chartY - cy;
-    const angle = Math.atan2(dy, dx);
-    const offset = 12;
-    const x = cx + Math.cos(angle) * (outerRadius + offset);
-    const y = cy + Math.sin(angle) * (outerRadius + offset);
-    setTooltipPos({ x, y });
-  };
-
-  const handlePieMouseLeave = () => {
-    setTooltipPos(undefined);
-  };
 
   const sixMonthData = generateSixMonthTrend();
   const { dailyData, dailyAverage, projectedTotal } = generateDailyProjection();
@@ -332,7 +309,7 @@ const UnifiedCharts = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="relative h-[180px] w-full" ref={pieContainerRef}>
+                  <div className="relative h-[180px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -346,8 +323,6 @@ const UnifiedCharts = ({
                           cornerRadius={4}
                           dataKey="value"
                           labelLine={false}
-                          onMouseMove={handlePieMouseMove}
-                          onMouseLeave={handlePieMouseLeave}
                         >
                           {expensesByCategory.map((entry) => (
                             <Cell
@@ -360,12 +335,8 @@ const UnifiedCharts = ({
                         </Pie>
                         <Tooltip
                           content={renderCategoryTooltip}
-                          position={tooltipPos}
-                          wrapperStyle={{ 
-                            pointerEvents: 'none', 
-                            visibility: tooltipPos ? 'visible' : 'hidden',
-                            zIndex: 50
-                          }}
+                          cursor={{ fill: 'hsl(var(--foreground))', opacity: 0.1 }}
+                          wrapperStyle={{ zIndex: 50 }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
