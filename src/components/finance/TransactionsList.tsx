@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +63,9 @@ const TransactionsList = ({
   const [showAll, setShowAll] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isCategoryManagementOpen, setIsCategoryManagementOpen] = useState(false);
+  const tagsContainerRef = useRef<HTMLDivElement>(null);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [hasTagOverflow, setHasTagOverflow] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -185,6 +188,27 @@ const TransactionsList = ({
     .map(categoryId => categories.find(cat => cat.id === categoryId))
     .filter(Boolean) as Category[];
 
+  useEffect(() => {
+    const checkOverflow = () => {
+      const el = tagsContainerRef.current;
+      if (el) {
+        setHasTagOverflow(el.scrollHeight > el.clientHeight);
+      }
+    };
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [uniqueCategories]);
+
+  useEffect(() => {
+    if (!tagsExpanded) {
+      const el = tagsContainerRef.current;
+      if (el) {
+        setHasTagOverflow(el.scrollHeight > el.clientHeight);
+      }
+    }
+  }, [tagsExpanded]);
+
   return (
     <Card className="flex flex-col h-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col h-full">
@@ -206,79 +230,98 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
-        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-2 sm:pb-4 pt-2">
-          <div className="flex justify-end mb-4">
-            <Select
-              value={sortOrder}
-              onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}
-            >
-              <SelectTrigger className="w-full sm:w-[180px] h-8">
-                <ArrowUpDown className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Mais recentes</SelectItem>
-                <SelectItem value="oldest">Mais antigos</SelectItem>
-                <SelectItem value="highest">Maior valor</SelectItem>
-                <SelectItem value="lowest">Menor valor</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Filter Tags */}
-          {uniqueCategories.length > 0 && (
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {uniqueCategories.map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant={selectedFilters.includes(category.id) ? "default" : "outline"}
-                    className={cn(
-                      "cursor-pointer transition-colors",
-                      selectedFilters.includes(category.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
-                    )}
-                    onClick={() => handleCategoryFilter(category.id)}
-                    style={{
-                      backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
-                      borderColor: category.color
-                    }}
-                  >
-                    {category.name}
-                  </Badge>
-                ))}
-              </div>
-
-              {/* Selected Filters Display */}
-              {selectedFilters.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm text-muted-foreground">Filtros ativos:</span>
-                  {selectedFilters.map((filterId) => {
-                    const category = categories.find(cat => cat.id === filterId);
-                    return category ? (
-                      <Badge
-                        key={filterId}
-                        variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() => clearFilter(filterId)}
-                      >
-                        {category.name}
-                        <X className="w-3 h-3 ml-1" />
-                      </Badge>
-                    ) : null;
-                  })}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={clearAllFilters}
-                  >
-                    Limpar todos
-                  </Button>
+        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-4 pt-2">
+          <div className="mb-6">
+            <div className="flex flex-wrap items-start gap-2">
+              {uniqueCategories.length > 0 && (
+                <div
+                  ref={tagsContainerRef}
+                  className={cn(
+                    "flex flex-1 flex-wrap items-center gap-2 transition-all",
+                    tagsExpanded ? "max-h-96" : "max-h-16 overflow-hidden"
+                  )}
+                >
+                  {uniqueCategories.map((category) => (
+                    <Badge
+                      key={category.id}
+                      variant={selectedFilters.includes(category.id) ? "default" : "outline"}
+                      className={cn(
+                        "cursor-pointer transition-colors",
+                        selectedFilters.includes(category.id)
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted",
+                      )}
+                      onClick={() => handleCategoryFilter(category.id)}
+                      style={{
+                        backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
+                        borderColor: category.color
+                      }}
+                    >
+                      {category.name}
+                    </Badge>
+                  ))}
                 </div>
               )}
+              {uniqueCategories.length > 0 && hasTagOverflow && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 self-start"
+                  onClick={() => setTagsExpanded(prev => !prev)}
+                >
+                  {tagsExpanded ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
+              <Select
+                value={sortOrder}
+                onValueChange={(value) => setSortOrder(value as 'newest' | 'oldest' | 'highest' | 'lowest')}
+              >
+                <SelectTrigger className="ml-auto w-full sm:w-[180px] h-8">
+                  <ArrowUpDown className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Mais recentes</SelectItem>
+                  <SelectItem value="oldest">Mais antigos</SelectItem>
+                  <SelectItem value="highest">Maior valor</SelectItem>
+                  <SelectItem value="lowest">Menor valor</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+
+            {/* Selected Filters Display */}
+            {selectedFilters.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+                {selectedFilters.map((filterId) => {
+                  const category = categories.find(cat => cat.id === filterId);
+                  return category ? (
+                    <Badge
+                      key={filterId}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => clearFilter(filterId)}
+                    >
+                      {category.name}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={clearAllFilters}
+                >
+                  Limpar todos
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* Previous Balance Transfer Prompt */}
           {showBalancePrompt && previousBalance !== null && onAcceptBalance && onRejectBalance && (
@@ -552,15 +595,9 @@ const TransactionsList = ({
                 ))}
               </div>
 
-              {/* Controles de expansão minimalistas */}
-              {(hasMore || showAll) && (
-                <div className="mt-4">
-                  {/* Gradient fade effect */}
-                  {hasMore && !showAll && (
-                    <div className="h-4 bg-gradient-to-t from-card to-transparent -mb-1 relative z-10" />
-                  )}
-
-                  <div className="flex justify-center pt-2 pb-0">
+                {/* Controles de expansão minimalistas */}
+                {(hasMore || showAll) && (
+                  <div className="mt-auto flex justify-center pt-2">
                     {showAll ? (
                       <Button
                         variant="ghost"
@@ -578,7 +615,7 @@ const TransactionsList = ({
                         <div className="flex items-center gap-2">
                           <ChevronUp className={cn(
                             "w-4 h-4 transition-transform duration-200",
-                            isAnimating && "animate-spin"
+                            isAnimating && "animate-spin",
                           )} />
                           <span className="text-sm font-medium">
                             {isAnimating ? "Recolhendo..." : "Recolher"}
@@ -605,14 +642,13 @@ const TransactionsList = ({
                           </span>
                           <ChevronDown className={cn(
                             "w-4 h-4 transition-transform duration-200",
-                            isAnimating && "animate-spin"
+                            isAnimating && "animate-spin",
                           )} />
                         </div>
                       </Button>
                     )}
                   </div>
-                </div>
-              )}
+                )}
             </div>
           )}
         </TabsContent>
