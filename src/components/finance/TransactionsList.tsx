@@ -230,15 +230,16 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
-        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-4 pt-2">
-          <div className="mb-6">
+
+        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-0 pt-2">
+          <div className="mb-4">
             <div className="flex flex-wrap items-start gap-2">
               {uniqueCategories.length > 0 && (
                 <div
                   ref={tagsContainerRef}
                   className={cn(
                     "flex flex-1 flex-wrap items-center gap-2 transition-all",
-                    tagsExpanded ? "max-h-96" : "max-h-16 overflow-hidden"
+                    tagsExpanded ? "max-h-20" : "max-h-9 overflow-hidden"
                   )}
                 >
                   {uniqueCategories.map((category) => (
