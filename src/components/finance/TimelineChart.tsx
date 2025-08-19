@@ -54,7 +54,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="flex-1 px-2 sm:px-3 md:px-4 overflow-auto">
+      <div className="flex-1 overflow-auto">
         <Timeline
           position={isMobile ? 'right' : 'alternate'}
           sx={{
@@ -173,5 +173,3 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
 };
 
 export default TimelineChart;
-
-

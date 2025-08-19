@@ -186,8 +186,8 @@ const TransactionsList = ({
     .filter(Boolean) as Category[];
 
   return (
-    <Card className="h-full flex flex-col">
-      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col flex-1">
+    <Card className="flex flex-col h-fit">
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
@@ -206,7 +206,7 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
-        <TabsContent value="list" className="flex flex-col flex-1 pb-0 mt-0">
+        <TabsContent value="list" className="flex flex-col mt-0 px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
           <div className="flex justify-end mb-4">
             <Select
               value={sortOrder}
@@ -341,18 +341,20 @@ const TransactionsList = ({
           )}
 
           {sortedTransactions.length === 0 && !showBalancePrompt ? (
-            <p className="text-muted-foreground text-center py-8">
-              Nenhuma transação encontrada para este mês.
-            </p>
+            <div className="flex items-center justify-center h-48">
+                <p className="text-muted-foreground text-center">
+                    Nenhuma transação encontrada para este mês.
+                </p>
+            </div>
           ) : (
-            <>
-              {/* Lista ocupa o espaço e empurra os controles para baixo */}
+            <div>
+              {/* Lista de Transações */}
               <div
                 className={cn(
-                "flex-1 space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out",
-                isAnimating && "opacity-75 scale-[0.99]"
-              )}
-                >
+                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out",
+                  isAnimating && "opacity-75 scale-[0.99]"
+                )}
+              >
                 {visibleTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
@@ -552,7 +554,7 @@ const TransactionsList = ({
 
               {/* Controles de expansão minimalistas */}
               {(hasMore || showAll) && (
-                <div className="mt-auto">
+                <div className="mt-6">
                   {/* Gradient fade effect */}
                   {hasMore && !showAll && (
                     <div className="h-6 bg-gradient-to-t from-card to-transparent -mb-2 relative z-10" />
@@ -611,10 +613,10 @@ const TransactionsList = ({
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </TabsContent>
-        <TabsContent value="timeline" className="flex flex-col flex-1 pb-0 mt-0">
+        <TabsContent value="timeline" className="flex flex-col flex-1 mt-0 p-4 sm:p-6 pt-4">
           <TimelineChart 
             transactions={sortedTransactions} 
             categories={categories} 

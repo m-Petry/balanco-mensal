@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import PasswordLock from "@/components/auth/PasswordLock";
@@ -102,7 +101,7 @@ const FinanceDashboard = () => {
           <div className="hidden sm:block space-y-4 sm:space-y-6">
             <FinancialSummary monthlyData={currentMonthData} valuesVisible={valuesVisible} />
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:items-start">
               {/* Left Column - Transactions List */}
               <TransactionsList
                 transactions={currentMonthData.transactions}
