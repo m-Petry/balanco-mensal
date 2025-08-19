@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { MonthlyData } from "@/types/finance";
 import { formatCurrency } from "@/utils/currency";
+import { cn } from '@/lib/utils';
 
 interface FinancialSummaryProps {
   monthlyData: MonthlyData;
@@ -14,18 +15,18 @@ const FinancialSummary = ({ monthlyData, valuesVisible }: FinancialSummaryProps)
   const spentPercentage = totalIncome > 0 ? (totalExpense / totalIncome) * 100 : 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      {/* Balance Card - New Design */}
-      <Card className="lg:col-span-1 bg-gradient-to-b from-card to-background p-4 rounded-2xl shadow-lg transform md:hover:scale-105 transition-transform duration-300 border">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-2">
+      {/* Balance Card */}
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-bold text-foreground">Saldo</CardTitle>
-          <Wallet className={`h-5 w-5 ${balance >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+          <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+          <Wallet className={cn('h-4 w-4', balance >= 0 ? 'text-green-500' : 'text-red-500')} />
         </CardHeader>
         <CardContent>
-          <p className={`text-2xl font-bold text-foreground transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
+          <div className={`text-2xl font-bold transition-all duration-300 ${!valuesVisible ? 'blur-md select-none' : ''}`}>
             {formatCurrency(balance)}
-          </p>
-          <p className={`${balance >= 0 ? 'text-green-400' : 'text-red-400'} text-xs`}>
+          </div>
+          <p className={cn('text-xs', balance >= 0 ? 'text-green-500' : 'text-red-500')}>
             {balance >= 0 ? 'Resultado positivo' : 'Resultado negativo'}
           </p>
         </CardContent>

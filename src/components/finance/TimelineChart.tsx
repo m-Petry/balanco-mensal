@@ -27,7 +27,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const INITIAL_VISIBLE_COUNT = 4;
+  const INITIAL_VISIBLE_COUNT = 5;
 
   const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -56,25 +56,24 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
     <div className="w-full h-full flex flex-col">
       <div className="flex-1 overflow-auto">
         <Timeline
-          position={isMobile ? 'right' : 'alternate'}
+          position="alternate"
           sx={{
-            p: 0,
-            m: 0,
-            mt: { xs: -1, sm: -0.5 },
+            py: 2,
+            px: { xs: 0, sm: 2 },
             '& .MuiTimelineItem-root': {
-              minHeight: { xs: 'auto', sm: 'auto' },
-              mb: { xs: 0.5, sm: 1, md: 1.5 }
+              minHeight: 'auto',
+              '&::before': { 
+                flex: { xs: 0, sm: 0.1 },
+                padding: { xs: 0, sm: 2 },
+              },
             },
-            '& .MuiTimelineItem-root:first-of-type': {
-              minHeight: 0,
-              mt: { xs: -1, sm: -0.5 }
+            '& .MuiTimelineOppositeContent-root': {
+              m: 'auto 0',
+              textAlign: 'right',
             },
-            '& .MuiTimelineItem-root:before': { flex: 0, padding: 0 },
-            '& .MuiTimelineOppositeContent-root': { flex: 1, px: 0 },
-            '& .MuiTimelineContent-root': { flex: 1, px: 0 },
-            '& .MuiTimelineItem-root:last-child': {
-              mb: 0
-            }
+            '& .MuiTimelineContent-root': {
+              maxWidth: '400px',
+            },
           }}
         >
         {visibleTransactions.map(transaction => {
@@ -82,23 +81,13 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
           const category = getCategory(transaction.categoryId);
 
           return (
-            <TimelineItem
-              key={transaction.id}
-              position={isMobile ? 'right' : isIncome ? 'left' : 'right'}
-              sx={{
-                minHeight: 'auto'
-              }}
-            >
-              {!isMobile && (
-                <TimelineOppositeContent
-                  sx={{ m: 'auto 0' }}
-                  align={isIncome ? 'left' : 'right'}
-                  variant="body2"
-                  className="text-muted-foreground"
-                >
-                  {format(parseISO(transaction.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
-                </TimelineOppositeContent>
-              )}
+            <TimelineItem key={transaction.id} position={isMobile ? 'right' : isIncome ? 'left' : 'right'}>
+              <TimelineOppositeContent
+                variant="body2"
+                className="text-muted-foreground hidden sm:block"
+              >
+                {format(parseISO(transaction.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+              </TimelineOppositeContent>
               <TimelineSeparator>
                 <TimelineConnector />
                 <TimelineDot color={isIncome ? 'success' : 'error'}>
@@ -106,21 +95,15 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                 </TimelineDot>
                 <TimelineConnector />
               </TimelineSeparator>
-              <TimelineContent sx={{
-                py: { xs: 0.5, sm: 1 },
-                px: { xs: 0.5, sm: 1, md: 2 },
-                minWidth: { xs: '180px', sm: '260px', md: '300px' }
-              }}>
+              <TimelineContent>
                 <Card className="w-full hover:border-primary/30 transition-colors shadow-sm">
-                  <CardHeader className="pb-1 px-3 pt-3 sm:pb-2 sm:px-4 sm:pt-4">
+                  <CardHeader className="p-3">
                     <CardTitle className="text-sm sm:text-base font-medium leading-tight">{transaction.description}</CardTitle>
-                    {isMobile && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {format(parseISO(transaction.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground mt-1 sm:hidden">
+                      {format(parseISO(transaction.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                    </p>
                   </CardHeader>
-                  <CardContent className="px-3 pb-3 pt-0 sm:px-4 sm:pb-4 space-y-1">
+                  <CardContent className="p-3 pt-0 space-y-1">
                     {category && (
                       <Badge
                         variant="outline"

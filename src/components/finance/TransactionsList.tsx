@@ -231,15 +231,15 @@ const TransactionsList = ({
         </CardHeader>
 
 
-        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-0 pt-2">
-          <div className="mb-4">
+        <TabsContent value="list" className="flex flex-col flex-1 mt-0">
+          <div className="mb-4 px-4 sm:px-6 pt-2">
             <div className="flex flex-wrap items-start gap-2">
               {uniqueCategories.length > 0 && (
                 <div
                   ref={tagsContainerRef}
                   className={cn(
                     "flex flex-1 flex-wrap items-center gap-2 transition-all",
-                    tagsExpanded ? "max-h-20" : "max-h-9 overflow-hidden"
+                    tagsExpanded ? "max-h-40" : "max-h-20 overflow-hidden"
                   )}
                 >
                   {uniqueCategories.map((category) => (
@@ -391,11 +391,11 @@ const TransactionsList = ({
                 </p>
             </div>
           ) : (
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1 justify-between">
               {/* Lista de Transações */}
               <div
                 className={cn(
-                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out flex-1",
+                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out px-4 sm:px-6",
                   isAnimating && "opacity-75 scale-[0.99]"
                 )}
               >
@@ -598,7 +598,7 @@ const TransactionsList = ({
 
                 {/* Controles de expansão minimalistas */}
                 {(hasMore || showAll) && (
-                  <div className="mt-auto flex justify-center pt-2">
+                  <div className="flex justify-center pt-4 mt-4 border-t">
                     {showAll ? (
                       <Button
                         variant="ghost"
@@ -653,7 +653,7 @@ const TransactionsList = ({
             </div>
           )}
         </TabsContent>
-        <TabsContent value="timeline" className="flex flex-col flex-1 mt-0 p-4 sm:p-6 pt-4">
+        <TabsContent value="timeline" className="flex flex-col flex-1 mt-0 pt-2">
           <TimelineChart 
             transactions={sortedTransactions} 
             categories={categories} 

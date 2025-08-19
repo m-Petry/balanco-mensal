@@ -63,6 +63,50 @@ const ModernNavigation = React.forwardRef<HTMLDivElement, ModernNavigationProps>
     },
     ref
   ) => {
+    const renderNavItem = (item: NavigationItem) => {
+      const isActive = activeItem === item.id;
+      return (
+        <button
+          key={item.id}
+          onClick={() => onItemClick?.(item)}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 relative group",
+            isActive
+              ? "text-primary bg-primary/10"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          )}
+        >
+          <div className="relative">
+            <div
+              className={cn(
+                "transition-all duration-300",
+                isActive ? "scale-110" : "group-hover:scale-105"
+              )}
+            >
+              {item.icon}
+            </div>
+            {item.badge && item.badge > 0 && (
+              <div className="absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+                {item.badge > 99 ? "99+" : item.badge}
+              </div>
+            )}
+          </div>
+          {showLabels && (
+            <span
+              className={cn(
+                "text-xs font-medium transition-all duration-300",
+                isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+              )}
+            >
+              {item.label}
+            </span>
+          )}
+          {isActive && (
+            <div className="absolute bottom-0 h-1 w-1 rounded-full bg-primary" />
+          )}
+        </button>
+      );
+    };
     return (
       <div
         className={cn(navigationVariants({ variant, size, className }))}
@@ -82,66 +126,19 @@ const ModernNavigation = React.forwardRef<HTMLDivElement, ModernNavigationProps>
               </button>
             </div>
           )}
-          <div className={cn(
-            "flex items-center justify-around h-full px-4",
-            centered && "justify-center gap-8"
-          )}>
-            {items.map((item, index) => {
-              const isActive = activeItem === item.id;
-              const isFabPosition = fab && index === Math.floor(items.length / 2);
-              
-              return (
-                <React.Fragment key={item.id}>
-                  {/* FAB in center if specified */}
-                  {isFabPosition && fab && (
-                    <div className="w-16 h-16" /> // Placeholder to maintain spacing
-                  )}
-                  
-                  {/* Navigation Item */}
-                  <button
-                    onClick={() => onItemClick?.(item)}
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 relative group",
-                      isActive
-                        ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                    )}
-                  >
-                    {/* Icon */}
-                    <div className="relative">
-                      <div className={cn(
-                        "transition-all duration-300",
-                        isActive ? "scale-110" : "group-hover:scale-105"
-                      )}>
-                        {item.icon}
-                      </div>
-                      
-                      {/* Badge */}
-                      {item.badge && item.badge > 0 && (
-                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                          {item.badge > 99 ? "99+" : item.badge}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Label */}
-                    {showLabels && (
-                      <span className={cn(
-                        "text-xs font-medium transition-all duration-300",
-                        isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                      )}>
-                        {item.label}
-                      </span>
-                    )}
-                    
-                    {/* Active Indicator */}
-                    {isActive && (
-                      <div className="absolute bottom-0 w-1 h-1 bg-primary rounded-full" />
-                    )}
-                  </button>
-                </React.Fragment>
-              );
-            })}
+          <div className="flex h-full items-center justify-between px-2">
+            {/* Left Items */}
+            <div className="flex flex-1 items-center justify-around">
+              {items.slice(0, 2).map(renderNavItem)}
+            </div>
+
+            {/* FAB Placeholder */}
+            {fab && <div className="w-20 flex-shrink-0" />}
+
+            {/* Right Items */}
+            <div className="flex flex-1 items-center justify-around">
+              {items.slice(2).map(renderNavItem)}
+            </div>
           </div>
         </div>
       </div>
