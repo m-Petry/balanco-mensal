@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +63,9 @@ const TransactionsList = ({
   const [showAll, setShowAll] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isCategoryManagementOpen, setIsCategoryManagementOpen] = useState(false);
+  const tagsContainerRef = useRef<HTMLDivElement>(null);
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false);
+  const [hasTagOverflow, setHasTagOverflow] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -185,9 +188,21 @@ const TransactionsList = ({
     .map(categoryId => categories.find(cat => cat.id === categoryId))
     .filter(Boolean) as Category[];
 
+  useEffect(() => {
+    const checkOverflow = () => {
+      const el = tagsContainerRef.current;
+      if (el) {
+        setHasTagOverflow(el.scrollHeight > el.clientHeight + 1);
+      }
+    };
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [uniqueCategories, isTagsExpanded]);
+
   return (
-    <Card className="flex flex-col h-fit">
-      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col">
+    <Card className="flex flex-col h-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col h-full">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
@@ -206,7 +221,7 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
-        <TabsContent value="list" className="flex flex-col mt-0 px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
+        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-2 sm:pb-4 pt-2">
           <div className="flex justify-end mb-4">
             <Select
               value={sortOrder}
@@ -227,27 +242,60 @@ const TransactionsList = ({
           {/* Filter Tags */}
           {uniqueCategories.length > 0 && (
             <div className="mb-6">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {uniqueCategories.map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant={selectedFilters.includes(category.id) ? "default" : "outline"}
-                    className={cn(
-                      "cursor-pointer transition-colors",
-                      selectedFilters.includes(category.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
-                    )}
-                    onClick={() => handleCategoryFilter(category.id)}
-                    style={{
-                      backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
-                      borderColor: category.color
-                    }}
-                  >
-                    {category.name}
-                  </Badge>
-                ))}
+              <div className="relative">
+                <div
+                  ref={tagsContainerRef}
+                  className={cn(
+                    "flex flex-wrap gap-2 mb-3 transition-all min-h-8",
+                    isTagsExpanded ? "max-h-40" : "max-h-8 overflow-hidden"
+                  )}
+                >
+                  {uniqueCategories.map((category) => (
+                    <Badge
+                      key={category.id}
+                      variant={selectedFilters.includes(category.id) ? "default" : "outline"}
+                      className={cn(
+                        "cursor-pointer transition-colors",
+                        selectedFilters.includes(category.id)
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted",
+                      )}
+                      onClick={() => handleCategoryFilter(category.id)}
+                      style={{
+                        backgroundColor: selectedFilters.includes(category.id) ? category.color : undefined,
+                        borderColor: category.color
+                      }}
+                    >
+                      {category.name}
+                    </Badge>
+                  ))}
+                </div>
+                {hasTagOverflow && !isTagsExpanded && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pl-6 bg-gradient-to-l from-background to-transparent">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={() => setIsTagsExpanded(true)}
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
+              {hasTagOverflow && isTagsExpanded && (
+                <div className="flex justify-end -mt-2 mb-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setIsTagsExpanded(false)}
+                  >
+                    Mostrar menos
+                    <ChevronUp className="w-3 h-3 ml-1" />
+                  </Button>
+                </div>
+              )}
 
               {/* Selected Filters Display */}
               {selectedFilters.length > 0 && (
@@ -341,17 +389,17 @@ const TransactionsList = ({
           )}
 
           {sortedTransactions.length === 0 && !showBalancePrompt ? (
-            <div className="flex items-center justify-center h-48">
+            <div className="flex items-center justify-center flex-1">
                 <p className="text-muted-foreground text-center">
                     Nenhuma transação encontrada para este mês.
                 </p>
             </div>
           ) : (
-            <div>
+            <div className="flex flex-col flex-1">
               {/* Lista de Transações */}
               <div
                 className={cn(
-                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out",
+                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out flex-1",
                   isAnimating && "opacity-75 scale-[0.99]"
                 )}
               >
@@ -554,13 +602,13 @@ const TransactionsList = ({
 
               {/* Controles de expansão minimalistas */}
               {(hasMore || showAll) && (
-                <div className="mt-6">
+                <div className="mt-4">
                   {/* Gradient fade effect */}
                   {hasMore && !showAll && (
-                    <div className="h-6 bg-gradient-to-t from-card to-transparent -mb-2 relative z-10" />
+                    <div className="h-4 bg-gradient-to-t from-card to-transparent -mb-1 relative z-10" />
                   )}
-                  
-                  <div className="flex justify-center pt-4 pb-2">
+
+                  <div className="flex justify-center pt-2 pb-0">
                     {showAll ? (
                       <Button
                         variant="ghost"
