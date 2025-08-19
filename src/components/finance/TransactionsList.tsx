@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,9 +64,6 @@ const TransactionsList = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isCategoryManagementOpen, setIsCategoryManagementOpen] = useState(false);
   const { toast } = useToast();
-  const tagsContainerRef = useRef<HTMLDivElement>(null);
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
-  const [filtersOverflowing, setFiltersOverflowing] = useState(false);
 
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
@@ -188,18 +185,6 @@ const TransactionsList = ({
     .map(categoryId => categories.find(cat => cat.id === categoryId))
     .filter(Boolean) as Category[];
 
-  useEffect(() => {
-    const checkOverflow = () => {
-      const el = tagsContainerRef.current;
-      if (el) {
-        setFiltersOverflowing(el.scrollHeight > el.clientHeight);
-      }
-    };
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [uniqueCategories]);
-
   return (
     <Card className="flex flex-col h-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col h-full">
@@ -242,13 +227,7 @@ const TransactionsList = ({
           {/* Filter Tags */}
           {uniqueCategories.length > 0 && (
             <div className="mb-6">
-              <div
-                ref={tagsContainerRef}
-                className={cn(
-                  "flex flex-wrap gap-2 mb-3 relative transition-all",
-                  filtersExpanded ? "max-h-40" : "max-h-8 overflow-hidden"
-                )}
-              >
+              <div className="flex flex-wrap gap-2 mb-3">
                 {uniqueCategories.map((category) => (
                   <Badge
                     key={category.id}
@@ -257,7 +236,7 @@ const TransactionsList = ({
                       "cursor-pointer transition-colors",
                       selectedFilters.includes(category.id)
                         ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted",
+                        : "hover:bg-muted"
                     )}
                     onClick={() => handleCategoryFilter(category.id)}
                     style={{
@@ -268,33 +247,7 @@ const TransactionsList = ({
                     {category.name}
                   </Badge>
                 ))}
-                {filtersOverflowing && !filtersExpanded && (
-                  <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-background to-transparent flex items-center justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-5 w-5 p-0 rounded-full"
-                      onClick={() => setFiltersExpanded(true)}
-                      title="Mostrar mais filtros"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-                )}
               </div>
-              {filtersOverflowing && filtersExpanded && (
-                <div className="flex justify-end mb-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 p-0 rounded-full"
-                    onClick={() => setFiltersExpanded(false)}
-                    title="Recolher filtros"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                </div>
-              )}
 
               {/* Selected Filters Display */}
               {selectedFilters.length > 0 && (
