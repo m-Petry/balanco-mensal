@@ -63,6 +63,7 @@ const TransactionsList = ({
   const [showAll, setShowAll] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isCategoryManagementOpen, setIsCategoryManagementOpen] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const { toast } = useToast();
 
   const handleEdit = (transaction: Transaction) => {
@@ -186,8 +187,8 @@ const TransactionsList = ({
     .filter(Boolean) as Category[];
 
   return (
-    <Card className="flex flex-col h-fit">
-      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col">
+    <Card className="flex flex-col h-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="list" className="flex flex-col h-full">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
@@ -206,7 +207,7 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
-        <TabsContent value="list" className="flex flex-col mt-0 px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
+        <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-2 sm:pb-4 pt-2">
           <div className="flex justify-end mb-4">
             <Select
               value={sortOrder}
@@ -225,9 +226,14 @@ const TransactionsList = ({
             </Select>
           </div>
           {/* Filter Tags */}
-          {uniqueCategories.length > 0 && (
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-2 mb-3">
+          <div className="mb-6">
+            <div className="relative mb-3">
+              <div
+                className={cn(
+                  "flex gap-2 min-h-8",
+                  filtersExpanded ? "flex-wrap" : "flex-nowrap overflow-hidden"
+                )}
+              >
                 {uniqueCategories.map((category) => (
                   <Badge
                     key={category.id}
@@ -236,7 +242,7 @@ const TransactionsList = ({
                       "cursor-pointer transition-colors",
                       selectedFilters.includes(category.id)
                         ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
+                        : "hover:bg-muted",
                     )}
                     onClick={() => handleCategoryFilter(category.id)}
                     style={{
@@ -248,37 +254,61 @@ const TransactionsList = ({
                   </Badge>
                 ))}
               </div>
-
-              {/* Selected Filters Display */}
-              {selectedFilters.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
-                  <span className="text-sm text-muted-foreground">Filtros ativos:</span>
-                  {selectedFilters.map((filterId) => {
-                    const category = categories.find(cat => cat.id === filterId);
-                    return category ? (
-                      <Badge
-                        key={filterId}
-                        variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() => clearFilter(filterId)}
-                      >
-                        {category.name}
-                        <X className="w-3 h-3 ml-1" />
-                      </Badge>
-                    ) : null;
-                  })}
+              {!filtersExpanded && uniqueCategories.length > 0 && (
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-card via-card/60 to-transparent flex items-center justify-end">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={clearAllFilters}
+                    className="pointer-events-auto h-6 w-6 p-0"
+                    onClick={() => setFiltersExpanded(true)}
                   >
-                    Limpar todos
+                    <Plus className="w-3 h-3" />
                   </Button>
                 </div>
               )}
             </div>
-          )}
+            {filtersExpanded && uniqueCategories.length > 0 && (
+              <div className="flex justify-end mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setFiltersExpanded(false)}
+                >
+                  <Minus className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
+
+            {/* Selected Filters Display */}
+            {selectedFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-lg">
+                <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+                {selectedFilters.map((filterId) => {
+                  const category = categories.find(cat => cat.id === filterId);
+                  return category ? (
+                    <Badge
+                      key={filterId}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => clearFilter(filterId)}
+                    >
+                      {category.name}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={clearAllFilters}
+                >
+                  Limpar todos
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* Previous Balance Transfer Prompt */}
           {showBalancePrompt && previousBalance !== null && onAcceptBalance && onRejectBalance && (
@@ -341,17 +371,17 @@ const TransactionsList = ({
           )}
 
           {sortedTransactions.length === 0 && !showBalancePrompt ? (
-            <div className="flex items-center justify-center h-48">
+            <div className="flex items-center justify-center flex-1">
                 <p className="text-muted-foreground text-center">
                     Nenhuma transação encontrada para este mês.
                 </p>
             </div>
           ) : (
-            <div>
+            <div className="flex flex-col flex-1">
               {/* Lista de Transações */}
               <div
                 className={cn(
-                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out",
+                  "space-y-3 sm:space-y-4 transition-all duration-300 ease-in-out flex-1",
                   isAnimating && "opacity-75 scale-[0.99]"
                 )}
               >
@@ -554,13 +584,13 @@ const TransactionsList = ({
 
               {/* Controles de expansão minimalistas */}
               {(hasMore || showAll) && (
-                <div className="mt-6">
+                <div className="mt-4">
                   {/* Gradient fade effect */}
                   {hasMore && !showAll && (
-                    <div className="h-6 bg-gradient-to-t from-card to-transparent -mb-2 relative z-10" />
+                    <div className="h-4 bg-gradient-to-t from-card to-transparent -mb-1 relative z-10" />
                   )}
-                  
-                  <div className="flex justify-center pt-4 pb-2">
+
+                  <div className="flex justify-center pt-2 pb-0">
                     {showAll ? (
                       <Button
                         variant="ghost"
