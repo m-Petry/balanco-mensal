@@ -101,7 +101,7 @@ const FinanceDashboard = () => {
           <div className="hidden sm:block space-y-4 sm:space-y-6">
             <FinancialSummary monthlyData={currentMonthData} valuesVisible={valuesVisible} />
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:items-stretch">
               {/* Left Column - Transactions List */}
               <TransactionsList
                 transactions={currentMonthData.transactions}
