@@ -230,6 +230,7 @@ const TransactionsList = ({
           </div>
         </CardHeader>
 
+
         <TabsContent value="list" className="flex flex-col flex-1 mt-0 px-4 sm:px-6 pb-0 pt-2">
           <div className="mb-4">
             <div className="flex flex-wrap items-start gap-2">
@@ -597,7 +598,7 @@ const TransactionsList = ({
 
                 {/* Controles de expansão minimalistas */}
                 {(hasMore || showAll) && (
-                  <div className="mt-2 mb-2 flex justify-center">
+                  <div className="mt-auto flex justify-center pt-2">
                     {showAll ? (
                       <Button
                         variant="ghost"

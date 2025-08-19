@@ -61,15 +61,17 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
             p: 0,
             m: 0,
             mt: { xs: -1, sm: -0.5 },
-            '& .MuiTimelineItem-root': { 
+            '& .MuiTimelineItem-root': {
               minHeight: { xs: 'auto', sm: 'auto' },
-              mb: { xs: 1, sm: 1.5, md: 2 }
+              mb: { xs: 0.5, sm: 1, md: 1.5 }
             },
-            '& .MuiTimelineItem-root:first-of-type': { 
-              minHeight: 0, 
+            '& .MuiTimelineItem-root:first-of-type': {
+              minHeight: 0,
               mt: { xs: -1, sm: -0.5 }
             },
             '& .MuiTimelineItem-root:before': { flex: 0, padding: 0 },
+            '& .MuiTimelineOppositeContent-root': { flex: 1, px: 0 },
+            '& .MuiTimelineContent-root': { flex: 1, px: 0 },
             '& .MuiTimelineItem-root:last-child': {
               mb: 0
             }
@@ -82,6 +84,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
           return (
             <TimelineItem
               key={transaction.id}
+              position={isMobile ? 'right' : isIncome ? 'left' : 'right'}
               sx={{
                 minHeight: 'auto'
               }}
@@ -89,7 +92,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
               {!isMobile && (
                 <TimelineOppositeContent
                   sx={{ m: 'auto 0' }}
-                  align={isIncome ? 'right' : 'left'}
+                  align={isIncome ? 'left' : 'right'}
                   variant="body2"
                   className="text-muted-foreground"
                 >
@@ -103,13 +106,13 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                 </TimelineDot>
                 <TimelineConnector />
               </TimelineSeparator>
-              <TimelineContent sx={{ 
-                py: { xs: 0.5, sm: 1 }, 
+              <TimelineContent sx={{
+                py: { xs: 0.5, sm: 1 },
                 px: { xs: 0.5, sm: 1, md: 2 },
-                minWidth: { xs: '200px', sm: '280px', md: '320px' }
+                minWidth: { xs: '180px', sm: '260px', md: '300px' }
               }}>
                 <Card className="w-full hover:border-primary/30 transition-colors shadow-sm">
-                  <CardHeader className="pb-2 px-3 pt-3 sm:pb-3 sm:px-4 sm:pt-4">
+                  <CardHeader className="pb-1 px-3 pt-3 sm:pb-2 sm:px-4 sm:pt-4">
                     <CardTitle className="text-sm sm:text-base font-medium leading-tight">{transaction.description}</CardTitle>
                     {isMobile && (
                       <p className="text-xs text-muted-foreground mt-1">
@@ -117,7 +120,7 @@ const TimelineChart = ({ transactions, categories, valuesVisible }: TimelineChar
                       </p>
                     )}
                   </CardHeader>
-                  <CardContent className="px-3 pb-3 pt-0 sm:px-4 sm:pb-4 space-y-2">
+                  <CardContent className="px-3 pb-3 pt-0 sm:px-4 sm:pb-4 space-y-1">
                     {category && (
                       <Badge
                         variant="outline"
